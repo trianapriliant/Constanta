@@ -90,6 +90,48 @@ export default async function ReviewExamPage({ params }: ReviewPageProps) {
         return option?.text_md || optionId
     }
 
+    // Check result policy
+    const resultPolicy = exam.result_policy || 'immediate'
+    const isGraded = attempt.status === 'graded'
+    const isExamEnded = exam.end_at && new Date(exam.end_at) < new Date()
+
+    const canShowResults =
+        resultPolicy === 'immediate' ||
+        (resultPolicy === 'when_graded' && isGraded) ||
+        (resultPolicy === 'after_end' && isExamEnded)
+
+    if (!canShowResults) {
+        return (
+            <div className="container mx-auto px-4 py-8 max-w-4xl">
+                <Link
+                    href="/student"
+                    className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
+                >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Dashboard
+                </Link>
+
+                <Card className="text-center py-12">
+                    <CardContent>
+                        <div className="w-20 h-20 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-6">
+                            <Clock className="w-10 h-10 text-yellow-600" />
+                        </div>
+                        <h1 className="text-2xl font-bold mb-2">Exam Submitted</h1>
+                        <p className="text-muted-foreground max-w-md mx-auto">
+                            Your attempt has been submitted successfully.
+                            {resultPolicy === 'when_graded'
+                                ? " Scores will be available once the teacher has finished grading."
+                                : " Results will be available after the exam period ends."}
+                        </p>
+                        <Link href="/student">
+                            <Button className="mt-8">Return to Dashboard</Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             <Link
@@ -108,7 +150,9 @@ export default async function ReviewExamPage({ params }: ReviewPageProps) {
                             <Trophy className="w-10 h-10 text-white" />
                         </div>
                         <h1 className="text-2xl font-bold mb-2">{exam.title}</h1>
-                        <p className="text-muted-foreground mb-6">Exam Completed</p>
+                        <p className="text-muted-foreground mb-6">
+                            {isGraded ? 'Exam Graded' : 'Exam Completed (Pending Manual Review)'}
+                        </p>
 
                         <div className="flex justify-center gap-8">
                             <div>
@@ -136,11 +180,18 @@ export default async function ReviewExamPage({ params }: ReviewPageProps) {
                             </div>
                         </div>
 
-                        {exam.passing_score && (
+                        {exam.passing_score && isGraded && (
                             <div className="mt-6">
                                 <Badge variant={percentage >= exam.passing_score ? 'default' : 'destructive'}>
                                     {percentage >= exam.passing_score ? 'PASSED' : 'NOT PASSED'}
                                     {' '}(Passing: {exam.passing_score}%)
+                                </Badge>
+                            </div>
+                        )}
+                        {exam.passing_score && !isGraded && (
+                            <div className="mt-6">
+                                <Badge variant="outline">
+                                    Pending Grading
                                 </Badge>
                             </div>
                         )}

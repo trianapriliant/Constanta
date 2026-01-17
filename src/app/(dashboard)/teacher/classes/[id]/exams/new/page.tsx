@@ -47,6 +47,7 @@ export default function NewExamPage() {
     const [maxAttempts, setMaxAttempts] = useState(1)
     const [passingScore, setPassingScore] = useState<number | null>(null)
     const [explanationPolicy, setExplanationPolicy] = useState('after_submit')
+    const [resultPolicy, setResultPolicy] = useState('immediate')
     const [published, setPublished] = useState(false)
     const [questions, setQuestions] = useState<QuestionItem[]>([])
     const [loadingQuestions, setLoadingQuestions] = useState(true)
@@ -126,6 +127,7 @@ export default function NewExamPage() {
                     max_attempts: maxAttempts,
                     passing_score: passingScore,
                     explanation_policy: explanationPolicy,
+                    result_policy: resultPolicy,
                     published,
                     published_at: published ? new Date().toISOString() : null,
                 })
@@ -264,6 +266,19 @@ export default function NewExamPage() {
                                         <SelectItem value="after_submit">After Submit</SelectItem>
                                         <SelectItem value="after_end">After Exam Ends</SelectItem>
                                         <SelectItem value="never">Never</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Show Scores/Results</Label>
+                                <Select value={resultPolicy} onValueChange={setResultPolicy}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="immediate">Immediately (Partial if not graded)</SelectItem>
+                                        <SelectItem value="when_graded">Only when Fully Graded</SelectItem>
+                                        <SelectItem value="after_end">After Exam Ends</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

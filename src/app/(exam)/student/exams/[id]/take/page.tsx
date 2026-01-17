@@ -24,6 +24,7 @@ import {
 import { MarkdownViewer } from '@/components/markdown'
 import { createClient } from '@/lib/supabase/client'
 import { QuestionNavigator } from '@/components/exam/question-navigator'
+import { CanvasAnswer, type CanvasAnswerRef } from '@/components/exam/canvas-answer'
 import type { Question, Attempt, AttemptAnswer, Exam, ExamQuestion } from '@/types/database'
 
 interface ExamData {
@@ -50,6 +51,7 @@ export default function TakeExamPage() {
 
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const lastSavedRef = useRef<string>('')
+    const canvasRef = useRef<CanvasAnswerRef>(null)
 
     // Load exam and attempt data
     useEffect(() => {
@@ -481,12 +483,38 @@ export default function TakeExamPage() {
                                         />
                                     )}
 
-                                    {question.type === 'essay' && (
-                                        <Textarea
-                                            value={answers[question.id] || ''}
-                                            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                                            placeholder="Write your essay here..."
-                                            rows={10}
+
+
+                                    {question.type === 'canvas' && (
+                                        <CanvasAnswer
+                                            ref={canvasRef}
+                                            initialData={answers[question.id]}
+                                            onSave={async () => {
+                                                if (canvasRef.current) {
+                                                    const data = await canvasRef.current.getData()
+                                                    handleAnswerChange(question.id, data)
+                                                    toast.success('Drawing saved manually')
+                                                }
+                                            }}
+                                            onStroke={() => {
+                                                // Auto-save debounce logic
+                                                if (saveTimeoutRef.current) {
+                                                    clearTimeout(saveTimeoutRef.current)
+                                                }
+                                                // Set a timeout to save after 2 seconds of inactivity
+                                                saveTimeoutRef.current = setTimeout(async () => {
+                                                    if (canvasRef.current) {
+                                                        const data = await canvasRef.current.getData()
+                                                        // Only save if changed (simple check)
+                                                        if (data !== lastSavedRef.current) {
+                                                            handleAnswerChange(question.id, data)
+                                                            lastSavedRef.current = data
+                                                            // Optional: toast.info('Auto-saved') // too spammy?
+                                                        }
+                                                    }
+                                                }, 2000)
+                                            }}
+                                            key={question.id}
                                         />
                                     )}
                                 </div>

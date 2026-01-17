@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Settings, Users, BookOpen, FileQuestion, BarChart3, Copy } from 'lucide-react'
+import { Users, Copy } from 'lucide-react'
+import { TeacherClassTabs } from './_components/teacher-class-tabs'
+
 import { ClassFeed } from './_components/class-feed'
 import { ClassMaterials } from './_components/class-materials'
 import { ClassExams } from './_components/class-exams'
@@ -91,58 +91,16 @@ export default async function ClassPage({ params }: ClassPageProps) {
             </div>
 
             {/* Class Tabs */}
-            <Tabs defaultValue="feed" className="space-y-6">
-                <TabsList className="bg-white border">
-                    <TabsTrigger value="feed" className="gap-2">
-                        <BookOpen className="w-4 h-4" />
-                        Feed
-                    </TabsTrigger>
-                    <TabsTrigger value="materials" className="gap-2">
-                        <BookOpen className="w-4 h-4" />
-                        Materials
-                    </TabsTrigger>
-                    <TabsTrigger value="exams" className="gap-2">
-                        <FileQuestion className="w-4 h-4" />
-                        Exams
-                    </TabsTrigger>
-                    <TabsTrigger value="questions" className="gap-2">
-                        <FileQuestion className="w-4 h-4" />
-                        Question Bank
-                    </TabsTrigger>
-                    <TabsTrigger value="people" className="gap-2">
-                        <Users className="w-4 h-4" />
-                        People
-                    </TabsTrigger>
-                    <TabsTrigger value="analytics" className="gap-2">
-                        <BarChart3 className="w-4 h-4" />
-                        Analytics
-                    </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="feed">
-                    <ClassFeed classId={id} />
-                </TabsContent>
-
-                <TabsContent value="materials">
-                    <ClassMaterials classId={id} />
-                </TabsContent>
-
-                <TabsContent value="exams">
-                    <ClassExams classId={id} />
-                </TabsContent>
-
-                <TabsContent value="questions">
-                    <ClassQuestions classId={id} />
-                </TabsContent>
-
-                <TabsContent value="people">
-                    <ClassPeople classId={id} classCode={cls.class_code} />
-                </TabsContent>
-
-                <TabsContent value="analytics">
-                    <ClassAnalytics classId={id} />
-                </TabsContent>
-            </Tabs>
+            <TeacherClassTabs
+                classId={id}
+                classCode={cls.class_code}
+                feed={<ClassFeed classId={id} />}
+                materials={<ClassMaterials classId={id} />}
+                exams={<ClassExams classId={id} />}
+                questions={<ClassQuestions classId={id} />}
+                people={<ClassPeople classId={id} classCode={cls.class_code} />}
+                analytics={<ClassAnalytics classId={id} />}
+            />
         </div>
     )
 }

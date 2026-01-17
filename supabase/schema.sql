@@ -14,7 +14,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE user_role AS ENUM ('teacher', 'student');
 CREATE TYPE class_member_role AS ENUM ('owner', 'teacher', 'student');
 CREATE TYPE class_member_status AS ENUM ('active', 'removed', 'pending');
-CREATE TYPE question_type AS ENUM ('mcq_single', 'mcq_multi', 'true_false', 'numeric', 'short_text', 'essay');
+CREATE TYPE question_type AS ENUM ('mcq_single', 'mcq_multi', 'true_false', 'numeric', 'short_text', 'essay', 'canvas');
 CREATE TYPE difficulty AS ENUM ('easy', 'medium', 'hard');
 CREATE TYPE attempt_status AS ENUM ('in_progress', 'submitted', 'graded');
 CREATE TYPE explanation_policy AS ENUM ('after_submit', 'after_end', 'never');
@@ -113,6 +113,7 @@ CREATE TABLE exams (
   max_attempts INTEGER NOT NULL DEFAULT 1,
   passing_score NUMERIC,
   explanation_policy explanation_policy NOT NULL DEFAULT 'after_submit',
+  result_policy result_policy NOT NULL DEFAULT 'immediate',
   start_at TIMESTAMPTZ,
   end_at TIMESTAMPTZ,
   published BOOLEAN NOT NULL DEFAULT false,
@@ -305,3 +306,26 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_class_created
   AFTER INSERT ON classes
   FOR EACH ROW EXECUTE FUNCTION handle_new_class();
+
+-- ============================================================================
+-- GRADING TRIGGER: Recalculate attempt score on answer update
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION calculate_attempt_score()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE attempts
+  SET score = (
+    SELECT COALESCE(SUM(points_awarded), 0)
+    FROM attempt_answers
+    WHERE attempt_id = COALESCE(NEW.attempt_id, OLD.attempt_id)
+  )
+  WHERE id = COALESCE(NEW.attempt_id, OLD.attempt_id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_answer_updated
+  AFTER INSERT OR UPDATE OR DELETE ON attempt_answers
+  FOR EACH ROW
+  EXECUTE FUNCTION calculate_attempt_score();

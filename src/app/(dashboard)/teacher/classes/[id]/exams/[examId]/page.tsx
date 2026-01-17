@@ -256,28 +256,34 @@ export default async function TeacherExamDetailPage({ params }: ExamDetailPagePr
                             ) : (
                                 <div className="space-y-3">
                                     {attempts.map((attempt) => (
-                                        <div key={attempt.id} className="p-4 rounded-lg border flex items-center justify-between">
-                                            <div>
-                                                <p className="font-medium">{attempt.student?.name}</p>
-                                                <p className="text-sm text-muted-foreground">{attempt.student?.email}</p>
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    Started: {formatDate(attempt.started_at)}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <Badge variant={
-                                                    attempt.status === 'graded' ? 'default' :
-                                                        attempt.status === 'submitted' ? 'secondary' : 'outline'
-                                                }>
-                                                    {attempt.status}
-                                                </Badge>
-                                                {(attempt.status === 'submitted' || attempt.status === 'graded') && (
-                                                    <p className="text-lg font-semibold mt-1">
-                                                        {attempt.score}/{attempt.max_score}
+                                        <Link
+                                            key={attempt.id}
+                                            href={`/teacher/classes/${id}/exams/${examId}/attempts/${attempt.id}`}
+                                            className="block"
+                                        >
+                                            <div className="p-4 rounded-lg border flex items-center justify-between hover:bg-muted/50 transition-colors">
+                                                <div>
+                                                    <p className="font-medium">{attempt.student?.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{attempt.student?.email}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        Started: {formatDate(attempt.started_at)}
                                                     </p>
-                                                )}
+                                                </div>
+                                                <div className="text-right">
+                                                    <Badge variant={
+                                                        attempt.status === 'graded' ? 'default' :
+                                                            attempt.status === 'submitted' ? 'secondary' : 'outline'
+                                                    }>
+                                                        {attempt.status}
+                                                    </Badge>
+                                                    {(attempt.status === 'submitted' || attempt.status === 'graded') && (
+                                                        <p className="text-lg font-semibold mt-1">
+                                                            {attempt.score}/{attempt.max_score}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             )}

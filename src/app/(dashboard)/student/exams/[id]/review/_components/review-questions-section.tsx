@@ -94,6 +94,15 @@ export function ReviewQuestionsSection({
                                 <span>{(answer.answer_json as string[]).map(id => getOptionText(question.options_json, id)).join(', ')}</span>
                             ) : question.type === 'true_false' ? (
                                 <span>{answer.answer_json ? 'True' : 'False'}</span>
+                            ) : question.type === 'canvas' ? (
+                                <div className="border rounded bg-white">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={answer.answer_json}
+                                        alt="Student Answer"
+                                        className="w-full h-auto max-h-[400px] object-contain"
+                                    />
+                                </div>
                             ) : (
                                 <span>{String(answer.answer_json)}</span>
                             )}

@@ -23,11 +23,39 @@ export function ClassExams({ classId }: ClassExamsProps) {
             const supabase = createClient()
             const { data } = await supabase
                 .from('exams')
-                .select('*')
+                .select(`
+                    *,
+                    attempts (
+                        id,
+                        status,
+                        score
+                    )
+                `)
                 .eq('class_id', classId)
                 .order('created_at', { ascending: false })
 
-            setExams(data || [])
+            // Transform data to include stats
+            const examsWithStats = data?.map((exam: any) => {
+                const attempts = exam.attempts || []
+                const submittedCount = attempts.filter((a: any) => a.status === 'submitted' || a.status === 'graded').length
+                const ungradedCount = attempts.filter((a: any) => a.status === 'submitted').length // Assuming 'submitted' means waiting for grade if manual? Or just status check.
+
+                const gradedAttempts = attempts.filter((a: any) => a.status === 'graded')
+                const totalScore = gradedAttempts.reduce((sum: number, a: any) => sum + (a.score || 0), 0)
+                const avgScore = gradedAttempts.length > 0 ? Math.round((totalScore / gradedAttempts.length) * 10) / 10 : null
+
+                return {
+                    ...exam,
+                    stats: {
+                        totalAttempts: attempts.length,
+                        submittedCount,
+                        ungradedCount,
+                        avgScore
+                    }
+                }
+            })
+
+            setExams(examsWithStats || [])
             setLoading(false)
         }
 
@@ -81,36 +109,62 @@ export function ClassExams({ classId }: ClassExamsProps) {
                                 key={exam.id}
                                 href={`/teacher/classes/${classId}/exams/${exam.id}`}
                             >
-                                <div className="p-4 rounded-xl border hover:bg-muted/50 transition-colors cursor-pointer">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-                                                <FileQuestion className="w-5 h-5 text-primary" />
+                                <div className="p-4 rounded-xl border hover:bg-muted/50 transition-colors cursor-pointer group">
+                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-50 to-emerald-50 border flex items-center justify-center shrink-0">
+                                                <FileQuestion className="w-6 h-6 text-teal-600" />
                                             </div>
-                                            <div>
-                                                <h4 className="font-medium">{exam.title}</h4>
-                                                <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                                                    <span className="flex items-center gap-1">
-                                                        <Clock className="w-3 h-3" />
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-semibold text-lg group-hover:text-teal-700 transition-colors">{exam.title}</h4>
+                                                    <Badge variant={exam.published ? 'default' : 'secondary'} className="h-5 text-[10px] px-1.5">
+                                                        {exam.published ? (
+                                                            <><Eye className="w-3 h-3 mr-1" /> Published</>
+                                                        ) : (
+                                                            <><EyeOff className="w-3 h-3 mr-1" /> Draft</>
+                                                        )}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <Clock className="w-3.5 h-3.5" />
                                                         {exam.duration_minutes} min
                                                     </span>
+                                                    {(exam as any).stats?.submittedCount > 0 && (
+                                                        <span className="flex items-center gap-1.5 text-foreground font-medium">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                                                            {(exam as any).stats?.submittedCount} students attempted
+                                                        </span>
+                                                    )}
+                                                    {(exam as any).stats?.avgScore !== null && (exam as any).stats?.avgScore > 0 && (
+                                                        <span className="flex items-center gap-1.5 text-foreground font-medium">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                            Avg: {(exam as any).stats?.avgScore}%
+                                                        </span>
+                                                    )}
                                                     {exam.start_at && (
-                                                        <span className="flex items-center gap-1">
-                                                            <Calendar className="w-3 h-3" />
+                                                        <span className="flex items-center gap-1.5">
+                                                            <Calendar className="w-3.5 h-3.5" />
                                                             {new Date(exam.start_at).toLocaleDateString()}
+                                                            {exam.end_at && ` - ${new Date(exam.end_at).toLocaleDateString()}`}
                                                         </span>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
-                                        <Badge variant={exam.published ? 'default' : 'secondary'}>
-                                            {exam.published ? (
-                                                <><Eye className="w-3 h-3 mr-1" /> Published</>
-                                            ) : (
-                                                <><EyeOff className="w-3 h-3 mr-1" /> Draft</>
+
+                                        <div className="flex items-center gap-2 self-start">
+                                            {(exam as any).stats?.ungradedCount > 0 && (
+                                                <Badge variant="destructive" className="bg-orange-500 hover:bg-orange-600 border-orange-600 text-white">
+                                                    {(exam as any).stats?.ungradedCount} Needs Grading
+                                                </Badge>
                                             )}
-                                        </Badge>
+                                        </div>
                                     </div>
+
+                                    {/* Progress Bar for Grading? Optional, maybe later */}
                                 </div>
                             </Link>
                         ))}

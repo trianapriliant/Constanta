@@ -62,7 +62,7 @@ export const mcqOptionSchema = z.object({
 })
 
 export const questionSchema = z.object({
-    type: z.enum(['mcq_single', 'mcq_multi', 'true_false', 'numeric', 'short_text', 'essay']),
+    type: z.enum(['mcq_single', 'mcq_multi', 'true_false', 'numeric', 'short_text', 'essay', 'canvas']),
     difficulty: z.enum(['easy', 'medium', 'hard']),
     tags: z.array(z.string()).default([]),
     points: z.number().min(1).default(1),

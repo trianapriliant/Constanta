@@ -174,6 +174,7 @@ export default function NewQuestionPage() {
                                     <SelectItem value="numeric">Numeric</SelectItem>
                                     <SelectItem value="short_text">Short Answer</SelectItem>
                                     <SelectItem value="essay">Essay</SelectItem>
+                                    <SelectItem value="canvas">Canvas / Drawing</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -381,6 +382,20 @@ export default function NewQuestionPage() {
                                     Tip: Wrap in /.../ for regex matching
                                 </p>
                             )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Canvas - No Correct Answer Input Needed (Manual Grading) */}
+                {questionType === 'canvas' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Canvas Settings</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                                Students will be provided with a blank canvas to draw their answer. This question type requires manual grading.
+                            </p>
                         </CardContent>
                     </Card>
                 )}

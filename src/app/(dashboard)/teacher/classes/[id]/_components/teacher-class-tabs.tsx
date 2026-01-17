@@ -1,0 +1,91 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { BookOpen, FileQuestion, BarChart3, Users } from 'lucide-react'
+
+interface TeacherClassTabsProps {
+    classId: string
+    classCode: string
+    feed: React.ReactNode
+    materials: React.ReactNode
+    exams: React.ReactNode
+    questions: React.ReactNode
+    people: React.ReactNode
+    analytics: React.ReactNode
+}
+
+export function TeacherClassTabs({
+    classId,
+    classCode,
+    feed,
+    materials,
+    exams,
+    questions,
+    people,
+    analytics
+}: TeacherClassTabsProps) {
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) {
+        return null // or a loading skeleton
+    }
+    return (
+        <Tabs defaultValue="feed" className="space-y-6">
+            <TabsList className="bg-white border">
+                <TabsTrigger value="feed" className="gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    Feed
+                </TabsTrigger>
+                <TabsTrigger value="materials" className="gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    Materials
+                </TabsTrigger>
+                <TabsTrigger value="exams" className="gap-2">
+                    <FileQuestion className="w-4 h-4" />
+                    Exams
+                </TabsTrigger>
+                <TabsTrigger value="questions" className="gap-2">
+                    <FileQuestion className="w-4 h-4" />
+                    Question Bank
+                </TabsTrigger>
+                <TabsTrigger value="people" className="gap-2">
+                    <Users className="w-4 h-4" />
+                    People
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Analytics
+                </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="feed">
+                {feed}
+            </TabsContent>
+
+            <TabsContent value="materials">
+                {materials}
+            </TabsContent>
+
+            <TabsContent value="exams">
+                {exams}
+            </TabsContent>
+
+            <TabsContent value="questions">
+                {questions}
+            </TabsContent>
+
+            <TabsContent value="people">
+                {people}
+            </TabsContent>
+
+            <TabsContent value="analytics">
+                {analytics}
+            </TabsContent>
+        </Tabs>
+    )
+}

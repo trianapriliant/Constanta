@@ -55,6 +55,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
         numeric: 'Numeric',
         short_text: 'Short Answer',
         essay: 'Essay',
+        canvas: 'Canvas / Drawing',
     }
 
     return (
