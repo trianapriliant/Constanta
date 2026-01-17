@@ -1,36 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Constanta - Modern Classroom Platform
 
-## Getting Started
+A clean, modern learning platform (Google Classroom-like) built with Next.js, Supabase, and shadcn/ui.
 
-First, run the development server:
+## Features
+
+- **Teachers**: Create classes, manage students, publish materials, create question banks, build exams, grade, and view analytics
+- **Students**: Join classes with codes, view materials, take exams with timer, get instant scores, and review explanations
+- **Rich Content**: Markdown editor with LaTeX math, code blocks, tables, and images
+- **Smart Exams**: Multiple question types, auto-grading, autosave, and anti-cheating measures
+
+## Tech Stack
+
+- **Frontend**: Next.js 14 (App Router) + TypeScript
+- **Styling**: TailwindCSS + shadcn/ui
+- **Database**: Supabase PostgreSQL + RLS
+- **Auth**: Supabase Auth
+- **Storage**: Supabase Storage
+- **Forms**: React Hook Form + Zod
+- **Markdown**: react-markdown + remark-gfm + rehype-katex
+
+## Setup Instructions
+
+### Prerequisites
+
+- Node.js 18+
+- npm or pnpm
+- Supabase account ([supabase.com](https://supabase.com))
+
+### 1. Clone and Install
+
+```bash
+cd constanta
+npm install
+```
+
+### 2. Setup Supabase
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Go to **SQL Editor** and run the following files in order:
+   - `supabase/schema.sql` - Creates all tables, indexes, and triggers
+   - `supabase/rls.sql` - Enables Row Level Security policies
+   - (Optional) `supabase/seed.sql` - Sample data templates
+3. Go to **Storage** and create a bucket named `attachments`:
+   - Public: `false`
+   - File size limit: `10MB`
+   - Allowed MIME types: `image/*`, `application/pdf`
+
+### 3. Configure Environment
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in your Supabase credentials (from Project Settings > API):
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+constanta/
+├── src/
+│   ├── app/                      # Next.js App Router
+│   │   ├── (auth)/               # Login, Register pages
+│   │   ├── (dashboard)/          
+│   │   │   ├── teacher/          # Teacher dashboard & classes
+│   │   │   └── student/          # Student dashboard & exams
+│   │   ├── api/                  # API routes (grading, etc.)
+│   │   └── page.tsx              # Landing page
+│   ├── components/
+│   │   ├── ui/                   # shadcn/ui components
+│   │   └── markdown/             # Markdown editor/viewer
+│   ├── lib/
+│   │   ├── supabase/             # Supabase clients
+│   │   ├── grading/              # Grading engine
+│   │   └── validations/          # Zod schemas
+│   └── types/                    # TypeScript types
+├── supabase/
+│   ├── schema.sql                # Database schema
+│   ├── rls.sql                   # RLS policies
+│   └── seed.sql                  # Sample data
+└── .env.example
+```
 
-## Learn More
+## Key Design Decisions
 
-To learn more about Next.js, take a look at the following resources:
+### Markdown Approach
+- Using `react-markdown` with `remark-gfm` for GitHub Flavored Markdown
+- LaTeX math rendered via `rehype-katex` (faster than MathJax)
+- Output sanitized with `rehype-sanitize`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Math Rendering
+- Inline math: `$...$`
+- Block math: `$$...$$`
+- KaTeX CSS loaded globally for performance
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Autosave Strategy
+- Debounced saves (800ms delay)
+- Synced to Supabase via API
+- Status indicator (Saving/Saved)
 
-## Deploy on Vercel
+### RLS Strategy
+- All tables have RLS enabled
+- Students can only access their classes/attempts
+- Teachers can manage their own classes
+- Class membership verified on every query
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Grading Engine
+- Pure TypeScript functions (deterministic)
+- Supports: MCQ single/multi, True/False, Numeric (with tolerance), Short text (regex), Essay (manual)
+- Server-authoritative grading on submit
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Question Types
+
+| Type | Auto-Grade | Description |
+|------|------------|-------------|
+| `mcq_single` | ✅ | Multiple choice (single answer) |
+| `mcq_multi` | ✅ | Multi-select (set equality) |
+| `true_false` | ✅ | True/False |
+| `numeric` | ✅ | Number with optional tolerance |
+| `short_text` | ✅ | Text (exact match or regex) |
+| `essay` | ❌ | Manual grading |
+
+## Sample Question Markdown
+
+```markdown
+# Quadratic Equation
+
+Solve the following equation:
+
+$$x^2 - 5x + 6 = 0$$
+
+What are the roots?
+
+| Method | Steps |
+|--------|-------|
+| Factor | $(x-2)(x-3) = 0$ |
+| Answer | $x = 2$ or $x = 3$ |
+```
+
+## License
+
+MIT
