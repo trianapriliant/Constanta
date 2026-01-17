@@ -16,6 +16,7 @@ import {
     LogOut,
     User,
     Plus,
+    Settings,
 } from 'lucide-react'
 
 export default async function StudentLayout({
@@ -98,6 +99,12 @@ export default async function StudentLayout({
                                     <Link href="/student/profile" className="cursor-pointer">
                                         <User className="mr-2 h-4 w-4" />
                                         Profile
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/student/settings" className="cursor-pointer">
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        Settings
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />

@@ -57,11 +57,6 @@ export function ClassExams({ classId }: ClassExamsProps) {
                     <CardDescription>Assessments and quizzes</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                    <Link href={`/teacher/classes/${classId}/questions`}>
-                        <Button size="sm" variant="outline" className="gap-2">
-                            Question Bank
-                        </Button>
-                    </Link>
                     <Link href={`/teacher/classes/${classId}/exams/new`}>
                         <Button size="sm" className="gap-2 gradient-teal text-white border-0">
                             <Plus className="w-4 h-4" />

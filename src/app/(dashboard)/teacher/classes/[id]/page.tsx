@@ -9,6 +9,7 @@ import { Settings, Users, BookOpen, FileQuestion, BarChart3, Copy } from 'lucide
 import { ClassFeed } from './_components/class-feed'
 import { ClassMaterials } from './_components/class-materials'
 import { ClassExams } from './_components/class-exams'
+import { ClassQuestions } from './_components/class-questions'
 import { ClassPeople } from './_components/class-people'
 import { ClassAnalytics } from './_components/class-analytics'
 
@@ -104,6 +105,10 @@ export default async function ClassPage({ params }: ClassPageProps) {
                         <FileQuestion className="w-4 h-4" />
                         Exams
                     </TabsTrigger>
+                    <TabsTrigger value="questions" className="gap-2">
+                        <FileQuestion className="w-4 h-4" />
+                        Question Bank
+                    </TabsTrigger>
                     <TabsTrigger value="people" className="gap-2">
                         <Users className="w-4 h-4" />
                         People
@@ -126,8 +131,12 @@ export default async function ClassPage({ params }: ClassPageProps) {
                     <ClassExams classId={id} />
                 </TabsContent>
 
+                <TabsContent value="questions">
+                    <ClassQuestions classId={id} />
+                </TabsContent>
+
                 <TabsContent value="people">
-                    <ClassPeople classId={id} />
+                    <ClassPeople classId={id} classCode={cls.class_code} />
                 </TabsContent>
 
                 <TabsContent value="analytics">

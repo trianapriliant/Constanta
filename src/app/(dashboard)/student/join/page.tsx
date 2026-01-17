@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { Loader2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,14 +16,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { joinClassSchema, type JoinClassFormData } from '@/lib/validations/schemas'
 import { createClient } from '@/lib/supabase/client'
 
-export default function JoinClassPage() {
+function JoinClassForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const defaultCode = searchParams.get('code') || ''
     const [isLoading, setIsLoading] = useState(false)
 
     const form = useForm<JoinClassFormData>({
         resolver: zodResolver(joinClassSchema),
         defaultValues: {
-            classCode: '',
+            classCode: defaultCode,
         },
     })
 
@@ -148,5 +151,13 @@ export default function JoinClassPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function JoinClassPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <JoinClassForm />
+        </Suspense>
     )
 }

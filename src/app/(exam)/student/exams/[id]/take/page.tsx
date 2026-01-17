@@ -53,9 +53,13 @@ export default function TakeExamPage() {
 
     // Load exam and attempt data
     useEffect(() => {
+        let isActive = true
+
         async function loadExam() {
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
+
+            if (!isActive) return
 
             if (!user) {
                 router.push('/login')
@@ -71,6 +75,8 @@ export default function TakeExamPage() {
                 .order('created_at', { ascending: false })
                 .limit(1)
 
+            if (!isActive) return
+
             let attempt = existingAttempts?.[0] || null
 
             // Get exam details
@@ -79,6 +85,8 @@ export default function TakeExamPage() {
                 .select('*')
                 .eq('id', examId)
                 .single()
+
+            if (!isActive) return
 
             if (!exam) {
                 toast.error('Exam not found')
@@ -104,6 +112,8 @@ export default function TakeExamPage() {
                     .select()
                     .single()
 
+                if (!isActive) return // If cancelled during insert, stop here (though insert might have happened, redundancy minimized by earlier checks)
+
                 if (error) {
                     toast.error('Failed to start exam')
                     console.error('Create attempt error:', error)
@@ -112,6 +122,8 @@ export default function TakeExamPage() {
 
                 attempt = newAttempt
             }
+
+            if (!isActive) return
 
             // Get exam questions
             const { data: examQuestions } = await supabase
@@ -123,11 +135,15 @@ export default function TakeExamPage() {
                 .eq('exam_id', examId)
                 .order('order_index')
 
+            if (!isActive) return
+
             // Get existing answers
             const { data: existingAnswers } = await supabase
                 .from('attempt_answers')
                 .select('*')
                 .eq('attempt_id', attempt.id)
+
+            if (!isActive) return
 
             const answersMap: Record<string, AttemptAnswer> = {}
             existingAnswers?.forEach((a) => {
@@ -164,6 +180,10 @@ export default function TakeExamPage() {
         }
 
         loadExam()
+
+        return () => {
+            isActive = false
+        }
     }, [examId, router])
 
     // Timer

@@ -1,16 +1,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { UserPlus, Users, Crown, GraduationCap } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { UserPlus, Users, Crown, GraduationCap, Copy } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface ClassPeopleProps {
     classId: string
+    classCode: string
 }
 
 interface Member {
@@ -24,9 +29,16 @@ interface Member {
     }
 }
 
-export function ClassPeople({ classId }: ClassPeopleProps) {
+export function ClassPeople({ classId, classCode }: ClassPeopleProps) {
     const [members, setMembers] = useState<Member[]>([])
     const [loading, setLoading] = useState(true)
+    const [isInviteOpen, setIsInviteOpen] = useState(false)
+    const inviteLink = typeof window !== 'undefined' ? `${window.location.origin}/student/join?code=${classCode}` : ''
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text)
+        toast.success('Copied to clipboard!')
+    }
 
     useEffect(() => {
         async function fetchMembers() {
@@ -71,6 +83,8 @@ export function ClassPeople({ classId }: ClassPeopleProps) {
 
     const teachers = members.filter(m => m.role === 'owner' || m.role === 'teacher')
     const students = members.filter(m => m.role === 'student')
+
+
 
     return (
         <div className="space-y-6">
@@ -117,10 +131,45 @@ export function ClassPeople({ classId }: ClassPeopleProps) {
                         </CardTitle>
                         <CardDescription>{students.length} student(s)</CardDescription>
                     </div>
-                    <Button size="sm" variant="outline" className="gap-2">
-                        <UserPlus className="w-4 h-4" />
-                        Invite
-                    </Button>
+
+                    <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+                        <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="gap-2">
+                                <UserPlus className="w-4 h-4" />
+                                Invite
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Invite Students</DialogTitle>
+                                <DialogDescription>
+                                    Share the class code or link with students to invite them.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 pt-4">
+                                <div className="space-y-2">
+                                    <Label>Class Code</Label>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex-1 p-2 bg-muted rounded-md font-mono text-center text-lg tracking-widest border">
+                                            {classCode}
+                                        </div>
+                                        <Button size="icon" variant="outline" onClick={() => copyToClipboard(classCode)}>
+                                            <Copy className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Invite Link</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input readOnly value={inviteLink} className="font-mono text-xs" />
+                                        <Button size="icon" variant="outline" onClick={() => copyToClipboard(inviteLink)}>
+                                            <Copy className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                 </CardHeader>
                 <CardContent>
                     {students.length === 0 ? (
