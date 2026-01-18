@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Plus, Users, BookOpen, FileQuestion } from 'lucide-react'
 import { CreateClassDialog } from './_components/create-class-dialog'
+import { ClassCard } from '@/components/dashboard/class-card'
 
 export default async function TeacherDashboard() {
     const supabase = await createClient()
@@ -61,27 +62,13 @@ export default async function TeacherDashboard() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {classes.map((cls: any) => (
                         <Link key={cls.id} href={`/teacher/classes/${cls.id}`}>
-                            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full pt-0 overflow-hidden">
-                                <div className="h-2 gradient-teal" />
-                                <CardHeader className="pb-3 pt-4">
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <CardTitle className="line-clamp-1">{cls.title}</CardTitle>
-                                            {cls.subject && (
-                                                <CardDescription className="mt-1">{cls.subject}</CardDescription>
-                                            )}
-                                        </div>
-                                        <Badge variant="secondary" className="font-mono text-xs">
-                                            {cls.class_code}
-                                        </Badge>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                        {cls.description || 'No description'}
-                                    </p>
-                                </CardContent>
-                            </Card>
+                            <ClassCard
+                                id={cls.id}
+                                title={cls.title}
+                                description={cls.description}
+                                subject={cls.subject}
+                                classCode={cls.class_code}
+                            />
                         </Link>
                     ))}
                 </div>

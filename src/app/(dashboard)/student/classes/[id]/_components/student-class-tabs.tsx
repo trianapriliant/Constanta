@@ -1,5 +1,6 @@
 'use client'
 
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,6 +10,7 @@ import { Megaphone, FileText, BookOpen, Clock, Calendar, Play } from 'lucide-rea
 import Link from 'next/link'
 import { StudentClassFeed } from './student-class-feed'
 import { useState, useEffect } from 'react'
+import { cn } from '@/lib/utils'
 
 interface StudentClassTabsProps {
     classId: string
@@ -64,7 +66,7 @@ export function StudentClassTabs({
 
     return (
         <Tabs defaultValue="feed">
-            <TabsList className="mb-6">
+            <TabsList className="mb-4">
                 <TabsTrigger value="feed" className="gap-2">
                     <Megaphone className="w-4 h-4" />
                     Feed
@@ -109,45 +111,48 @@ export function StudentClassTabs({
                             }, {})
                         ).sort(([a], [b]) => a.localeCompare(b)).map(([chapter, topics]) => (
                             <AccordionItem key={chapter} value={chapter} className="border rounded-lg px-4">
-                                <AccordionTrigger className="hover:no-underline hover:text-teal-600">
+                                <AccordionTrigger className="hover:no-underline hover:text-teal-600 py-3">
                                     <span className="font-semibold text-lg">{chapter}</span>
                                 </AccordionTrigger>
-                                <AccordionContent className="pt-4 space-y-6">
+                                <AccordionContent className="pt-2 space-y-3">
                                     {Object.entries(topics).sort(([a], [b]) => a.localeCompare(b)).map(([topic, items]) => (
                                         <div key={topic}>
-                                            <div className="flex items-center gap-2 mb-3">
+                                            <div className="flex items-center gap-2 mb-2">
                                                 <div className="h-px bg-border flex-1" />
-                                                <h4 className="text-sm font-medium text-muted-foreground px-2 py-1 bg-muted rounded-full">
+                                                <h4 className="text-xs font-medium text-muted-foreground px-2 py-0.5 bg-muted rounded-full uppercase tracking-wider">
                                                     {topic}
                                                 </h4>
                                                 <div className="h-px bg-border flex-1" />
                                             </div>
-                                            <div className="grid gap-3">
+                                            <div className="grid gap-2">
                                                 {items.map((material: any) => (
                                                     <Card key={material.id} className="hover:shadow-sm transition-shadow border-l-4 border-l-teal-500/0 hover:border-l-teal-500">
-                                                        <CardContent className="p-4 flex items-start justify-between">
+                                                        <CardContent className="px-4 py-2 flex items-center justify-between">
                                                             <div>
-                                                                <div className="flex items-center gap-2 mb-1">
-                                                                    <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Badge variant="outline" className="text-[10px] uppercase tracking-wider py-0 h-4 px-1">
                                                                         {material.category || 'Material'}
                                                                     </Badge>
-                                                                    <h3 className="font-medium">{material.title}</h3>
+                                                                    <h3 className="font-medium text-sm leading-tight text-foreground/90">{material.title}</h3>
                                                                 </div>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    Published {formatDate(material.published_at)}
-                                                                </p>
-                                                                {material.tags?.length > 0 && (
-                                                                    <div className="flex gap-2 mt-2">
-                                                                        {material.tags.slice(0, 3).map((tag: string) => (
-                                                                            <Badge key={tag} variant="secondary" className="text-xs">
-                                                                                {tag}
-                                                                            </Badge>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
+                                                                <div className="flex items-center gap-2 mt-0.5">
+                                                                    <span className="text-[10px] text-muted-foreground">
+                                                                        {formatDate(material.published_at)}
+                                                                    </span>
+                                                                    {material.tags?.length > 0 && (
+                                                                        <div className="flex gap-1 items-center">
+                                                                            <span className="text-[10px] text-muted-foreground">•</span>
+                                                                            {material.tags.slice(0, 3).map((tag: string) => (
+                                                                                <span key={tag} className="text-[10px] text-muted-foreground bg-muted px-1 rounded leading-none">
+                                                                                    {tag}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                             <Link href={`/student/classes/${classId}/materials/${material.id}`}>
-                                                                <Button variant="ghost" size="sm">
+                                                                <Button variant="ghost" size="sm" className="h-6 text-xs px-2">
                                                                     View
                                                                 </Button>
                                                             </Link>
@@ -177,30 +182,30 @@ export function StudentClassTabs({
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                         {exams.map((exam: any) => {
                             const status = getExamStatus(exam)
                             const attempt = attemptMap[exam.id]
 
                             return (
                                 <Card key={exam.id} className="hover:shadow-sm transition-shadow">
-                                    <CardContent className="p-4">
+                                    <CardContent className="px-4 py-2">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <h3 className="font-medium">{exam.title}</h3>
-                                                    <Badge className={status.color}>
+                                                    <h3 className="font-medium text-sm">{exam.title}</h3>
+                                                    <Badge className={cn(status.color, "text-[10px] px-1.5 py-0 h-5")}>
                                                         {status.label}
                                                     </Badge>
                                                 </div>
-                                                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                                                <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                                                     <span className="flex items-center gap-1">
-                                                        <Clock className="w-4 h-4" />
+                                                        <Clock className="w-3 h-3" />
                                                         {exam.duration_minutes} min
                                                     </span>
                                                     {exam.start_at && (
                                                         <span className="flex items-center gap-1">
-                                                            <Calendar className="w-4 h-4" />
+                                                            <Calendar className="w-3 h-3" />
                                                             {formatDate(exam.start_at)}
                                                         </span>
                                                     )}

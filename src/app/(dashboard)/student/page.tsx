@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { BookOpen, Plus, FileQuestion, CheckCircle } from 'lucide-react'
+import { ClassCard } from '@/components/dashboard/class-card'
 
 export default async function StudentDashboard() {
     const supabase = await createClient()
@@ -194,20 +195,13 @@ export default async function StudentDashboard() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {classes.map((cls: any) => (
                         <Link key={cls.id} href={`/student/classes/${cls.id}`}>
-                            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full pt-0 overflow-hidden">
-                                <div className="h-2 gradient-teal" />
-                                <CardHeader className="pb-3 pt-4">
-                                    <CardTitle className="line-clamp-1">{cls.title}</CardTitle>
-                                    {cls.subject && (
-                                        <CardDescription>{cls.subject}</CardDescription>
-                                    )}
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                        {cls.description || 'No description'}
-                                    </p>
-                                </CardContent>
-                            </Card>
+                            <ClassCard
+                                id={cls.id}
+                                title={cls.title}
+                                description={cls.description}
+                                subject={cls.subject}
+                                classCode={cls.class_code ? undefined : undefined} // Class code usually not shown to students or irrelevant? Teacher view shows it. Let's show it if available, but the props might need check. Actually students just need to click.
+                            />
                         </Link>
                     ))}
                 </div>

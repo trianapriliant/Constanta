@@ -86,7 +86,7 @@ export default async function StudentClassPage({ params }: StudentClassPageProps
             </Link>
 
             {/* Class Header */}
-            <div className="mb-8">
+            <div className="mb-4">
                 <div className="h-3 gradient-teal rounded-t-xl" />
                 <Card className="rounded-t-none">
                     <CardHeader>
