@@ -72,13 +72,15 @@ export default async function TeacherMaterialDetailPage({ params }: PageProps) {
                     {classData?.title}
                 </Link>
                 <span>/</span>
-                <span>Materials</span>
+                <Link href={`/teacher/classes/${id}?tab=materials`} className="hover:text-foreground">
+                    Materials
+                </Link>
                 <span>/</span>
                 <span className="text-foreground">{material.title}</span>
             </div>
 
             <Link
-                href={`/teacher/classes/${id}`}
+                href={`/teacher/classes/${id}?tab=materials`}
                 className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
             >
                 <ArrowLeft className="w-4 h-4 mr-2" />

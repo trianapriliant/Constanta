@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Calendar, FileText } from 'lucide-react'
+import { ArrowLeft, Calendar, FileText, ChevronLeft, ChevronRight } from 'lucide-react'
 import { MarkdownViewer } from '@/components/markdown'
 
 interface MaterialPageProps {
@@ -61,6 +61,45 @@ export default async function StudentMaterialPage({ params }: MaterialPageProps)
         })
     }
 
+    // Fetch all published materials for navigation context
+    const { data: allMaterials } = await supabase
+        .from('materials')
+        .select('id, title, chapter, topic, published_at')
+        .eq('class_id', id)
+        .eq('published', true)
+        .not('tags', 'cs', '{"announcement"}')
+        .order('published_at', { ascending: false }) as { data: any[] | null }
+
+    // Replicate StudentClassTabs sorting logic to determine linear order
+    const linearMaterials: any[] = []
+    if (allMaterials) {
+        const grouped = allMaterials.reduce((acc: any, item: any) => {
+            const chapter = item.chapter || 'General Resources'
+            const topic = item.topic || 'Uncategorized'
+            if (!acc[chapter]) acc[chapter] = {}
+            if (!acc[chapter][topic]) acc[chapter][topic] = []
+            acc[chapter][topic].push(item)
+            return acc
+        }, {})
+
+        // Sort Chapters
+        Object.entries(grouped)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([chapter, topics]: [string, any]) => {
+                // Sort Topics
+                Object.entries(topics)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .forEach(([topic, items]: [string, any]) => {
+                        // items are already sorted by published_at DESC from fetch
+                        linearMaterials.push(...items)
+                    })
+            })
+    }
+
+    const currentIndex = linearMaterials.findIndex(m => m.id === materialId)
+    const prevMaterial = currentIndex > 0 ? linearMaterials[currentIndex - 1] : null
+    const nextMaterial = currentIndex !== -1 && currentIndex < linearMaterials.length - 1 ? linearMaterials[currentIndex + 1] : null
+
     return (
         <div className="max-w-4xl mx-auto">
             {/* Breadcrumb */}
@@ -73,11 +112,13 @@ export default async function StudentMaterialPage({ params }: MaterialPageProps)
                     {classData?.title}
                 </Link>
                 <span>/</span>
-                <span>Materials</span>
+                <Link href={`/student/classes/${id}?tab=materials`} className="hover:text-foreground">
+                    Materials
+                </Link>
             </div>
 
             <Link
-                href={`/student/classes/${id}`}
+                href={`/student/classes/${id}?tab=materials`}
                 className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
             >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -121,6 +162,33 @@ export default async function StudentMaterialPage({ params }: MaterialPageProps)
                     )}
                 </CardContent>
             </Card>
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between mt-6">
+                {prevMaterial ? (
+                    <Link href={`/student/classes/${id}/materials/${prevMaterial.id}`}>
+                        <Button variant="outline" className="gap-2 h-auto py-2">
+                            <ChevronLeft className="w-4 h-4" />
+                            <div className="text-left">
+                                <div className="text-xs text-muted-foreground">Previous</div>
+                                <div className="font-medium max-w-[200px] truncate leading-tight">{prevMaterial.title}</div>
+                            </div>
+                        </Button>
+                    </Link>
+                ) : <div />}
+
+                {nextMaterial ? (
+                    <Link href={`/student/classes/${id}/materials/${nextMaterial.id}`}>
+                        <Button variant="outline" className="gap-2 h-auto py-2 text-right">
+                            <div className="text-right">
+                                <div className="text-xs text-muted-foreground">Next</div>
+                                <div className="font-medium max-w-[200px] truncate leading-tight">{nextMaterial.title}</div>
+                            </div>
+                            <ChevronRight className="w-4 h-4" />
+                        </Button>
+                    </Link>
+                ) : <div />}
+            </div>
         </div>
     )
 }

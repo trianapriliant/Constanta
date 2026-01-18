@@ -19,6 +19,7 @@ import {
     Plus,
     Settings,
 } from 'lucide-react'
+import { StudentHeaderActions } from '@/components/dashboard/student-header-actions'
 
 export default async function StudentLayout({
     children,
@@ -71,12 +72,7 @@ export default async function StudentLayout({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Link href="/student/join">
-                            <Button size="sm" className="gap-2 gradient-teal text-white border-0">
-                                <Plus className="w-4 h-4" />
-                                Join Class
-                            </Button>
-                        </Link>
+                        <StudentHeaderActions />
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

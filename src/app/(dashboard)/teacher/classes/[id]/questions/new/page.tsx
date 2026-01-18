@@ -130,7 +130,7 @@ export default function NewQuestionPage() {
             }
 
             toast.success('Question created!')
-            router.push(`/teacher/classes/${classId}/questions`)
+            router.push(`/teacher/classes/${classId}?tab=questions`)
             router.refresh()
         } catch {
             toast.error('An unexpected error occurred')
@@ -142,7 +142,7 @@ export default function NewQuestionPage() {
     return (
         <div className="max-w-4xl mx-auto">
             <Link
-                href={`/teacher/classes/${classId}/questions`}
+                href={`/teacher/classes/${classId}?tab=questions`}
                 className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
             >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -417,7 +417,7 @@ export default function NewQuestionPage() {
 
                 {/* Submit */}
                 <div className="flex justify-end gap-3">
-                    <Link href={`/teacher/classes/${classId}/questions`}>
+                    <Link href={`/teacher/classes/${classId}?tab=questions`}>
                         <Button type="button" variant="outline">
                             Cancel
                         </Button>

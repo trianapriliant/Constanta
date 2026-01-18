@@ -104,11 +104,11 @@ export default async function ReviewExamPage({ params }: ReviewPageProps) {
         return (
             <div className="container mx-auto px-4 py-8 max-w-4xl">
                 <Link
-                    href="/student"
+                    href={`/student/classes/${exam.class_id}?tab=exams`}
                     className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Dashboard
+                    Back to Class
                 </Link>
 
                 <Card className="text-center py-12">
@@ -123,8 +123,8 @@ export default async function ReviewExamPage({ params }: ReviewPageProps) {
                                 ? " Scores will be available once the teacher has finished grading."
                                 : " Results will be available after the exam period ends."}
                         </p>
-                        <Link href="/student">
-                            <Button className="mt-8">Return to Dashboard</Button>
+                        <Link href={`/student/classes/${exam.class_id}?tab=exams`}>
+                            <Button className="mt-8">Return to Class</Button>
                         </Link>
                     </CardContent>
                 </Card>
@@ -135,11 +135,11 @@ export default async function ReviewExamPage({ params }: ReviewPageProps) {
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             <Link
-                href="/student"
+                href={`/student/classes/${exam.class_id}?tab=exams`}
                 className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
             >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
+                Back to Class
             </Link>
 
             {/* Results Summary */}
@@ -208,8 +208,8 @@ export default async function ReviewExamPage({ params }: ReviewPageProps) {
 
             {/* Back button */}
             <div className="mt-8 text-center bg-transparent">
-                <Link href="/student">
-                    <Button variant="outline">Back to Dashboard</Button>
+                <Link href={`/student/classes/${exam.class_id}?tab=exams`}>
+                    <Button variant="outline">Back to Class</Button>
                 </Link>
             </div>
         </div>

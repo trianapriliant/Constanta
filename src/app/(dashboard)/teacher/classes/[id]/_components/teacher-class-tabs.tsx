@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useParams, useSearchParams } from 'next/navigation'
+import { ClassLinks } from './class-links'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { BookOpen, FileQuestion, BarChart3, Users } from 'lucide-react'
+import { BookOpen, FileQuestion, BarChart3, Users, Link as LinkIcon, GraduationCap, Database } from 'lucide-react'
 
 interface TeacherClassTabsProps {
     classId: string
@@ -25,6 +27,8 @@ export function TeacherClassTabs({
     people,
     analytics
 }: TeacherClassTabsProps) {
+    const searchParams = useSearchParams()
+    const defaultTab = searchParams.get('tab') || 'feed'
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
@@ -35,7 +39,7 @@ export function TeacherClassTabs({
         return null // or a loading skeleton
     }
     return (
-        <Tabs defaultValue="feed" className="space-y-6">
+        <Tabs defaultValue={defaultTab} className="space-y-6">
             <TabsList className="bg-white border">
                 <TabsTrigger value="feed" className="gap-2">
                     <BookOpen className="w-4 h-4" />
@@ -46,12 +50,16 @@ export function TeacherClassTabs({
                     Materials
                 </TabsTrigger>
                 <TabsTrigger value="exams" className="gap-2">
-                    <FileQuestion className="w-4 h-4" />
+                    <GraduationCap className="w-4 h-4" />
                     Exams
                 </TabsTrigger>
                 <TabsTrigger value="questions" className="gap-2">
-                    <FileQuestion className="w-4 h-4" />
+                    <Database className="w-4 h-4" />
                     Question Bank
+                </TabsTrigger>
+                <TabsTrigger value="links" className="gap-2">
+                    <LinkIcon className="w-4 h-4" />
+                    Links
                 </TabsTrigger>
                 <TabsTrigger value="people" className="gap-2">
                     <Users className="w-4 h-4" />
@@ -77,6 +85,10 @@ export function TeacherClassTabs({
 
             <TabsContent value="questions">
                 {questions}
+            </TabsContent>
+
+            <TabsContent value="links">
+                <ClassLinks classId={classId} />
             </TabsContent>
 
             <TabsContent value="people">

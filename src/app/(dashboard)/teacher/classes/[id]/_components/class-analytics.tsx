@@ -43,7 +43,7 @@ export function ClassAnalytics({ classId }: ClassAnalyticsProps) {
             // 2. Get exams
             const { data: exams } = await supabase
                 .from('exams')
-                .select('id, title, max_score')
+                .select('id, title')
                 .eq('class_id', classId)
                 .order('created_at', { ascending: false })
 
@@ -81,10 +81,13 @@ export function ClassAnalytics({ classId }: ClassAnalyticsProps) {
                 const avgScore = examAttempts.length > 0 ? totalScore / examAttempts.length : 0
                 const participation = studentCount ? (examAttempts.length / studentCount) * 100 : 0
 
+                // Get max score from any attempt or default to 0
+                const maxScore = examAttempts[0]?.max_score || 0
+
                 return {
                     id: exam.id,
                     title: exam.title,
-                    maxScore: exam.max_score,
+                    maxScore, // Derived from attempts
                     avgScore,
                     attemptCount: examAttempts.length,
                     participation

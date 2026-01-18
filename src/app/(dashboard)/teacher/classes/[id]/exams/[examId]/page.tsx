@@ -107,7 +107,7 @@ export default async function TeacherExamDetailPage({ params }: ExamDetailPagePr
             </div>
 
             <Link
-                href={`/teacher/classes/${id}`}
+                href={`/teacher/classes/${id}?tab=exams`}
                 className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
             >
                 <ArrowLeft className="w-4 h-4 mr-2" />

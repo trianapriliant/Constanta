@@ -81,7 +81,7 @@ export default function EditQuestionPage() {
 
             if (error || !data) {
                 toast.error('Failed to load question')
-                router.push(`/teacher/classes/${classId}/questions`)
+                router.push(`/teacher/classes/${classId}?tab=questions`)
                 return
             }
 
@@ -180,7 +180,7 @@ export default function EditQuestionPage() {
             }
 
             toast.success('Question updated!')
-            router.push(`/teacher/classes/${classId}/questions`)
+            router.push(`/teacher/classes/${classId}?tab=questions`)
             router.refresh()
         } catch {
             toast.error('An unexpected error occurred')
@@ -202,7 +202,7 @@ export default function EditQuestionPage() {
             setIsDeleting(false)
         } else {
             toast.success('Question deleted')
-            router.push(`/teacher/classes/${classId}/questions`)
+            router.push(`/teacher/classes/${classId}?tab=questions`)
             router.refresh()
         }
     }
@@ -219,7 +219,7 @@ export default function EditQuestionPage() {
         <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-6">
                 <Link
-                    href={`/teacher/classes/${classId}/questions`}
+                    href={`/teacher/classes/${classId}?tab=questions`}
                     className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -504,7 +504,7 @@ export default function EditQuestionPage() {
 
                 {/* Submit */}
                 <div className="flex justify-end gap-3 pb-8">
-                    <Link href={`/teacher/classes/${classId}/questions`}>
+                    <Link href={`/teacher/classes/${classId}?tab=questions`}>
                         <Button type="button" variant="outline">
                             Cancel
                         </Button>
