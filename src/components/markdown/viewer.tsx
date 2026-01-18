@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import { cn } from '@/lib/utils'
 
@@ -19,17 +20,14 @@ const isVideoFile = (url: string) => {
     return /\.(mp4|webm|ogv|mov)$/i.test(url)
 }
 
-// ... existing unwrap plugin and schema ...
-
-
-
-// Extend the default schema to allow KaTeX elements
+// Extend the default schema to allow KaTeX elements, mark tag, and style attributes
 const schema = {
     ...defaultSchema,
     tagNames: [
         ...(defaultSchema.tagNames || []),
         'math',
         'semantics',
+        'mark',
         'mrow',
         'mi',
         'mo',
@@ -88,14 +86,12 @@ export function MarkdownViewer({ content, className }: MarkdownViewerProps) {
         <div className={cn('prose-content', className)}>
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex, rehypeUnwrapVideo, [rehypeSanitize, schema]]}
+                rehypePlugins={[rehypeKatex, rehypeUnwrapVideo, rehypeRaw, [rehypeSanitize, schema]]}
                 components={{
                     // Custom code block rendering
                     code({ className, children, ...props }) {
                         const match = /language-(\w+)/.exec(className || '')
                         const isInline = !match
-
-
 
                         if (isInline) {
                             return (

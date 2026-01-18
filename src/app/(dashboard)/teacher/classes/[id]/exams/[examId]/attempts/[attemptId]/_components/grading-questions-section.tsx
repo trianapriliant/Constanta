@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { MarkdownViewer } from '@/components/markdown'
 import { CheckCircle, XCircle, HelpCircle, LayoutList, BookOpen, ChevronLeft, ChevronRight, Save } from 'lucide-react'
 import { QuestionNavigator } from '@/components/exam/question-navigator'
+import { CanvasAnswer } from '@/components/exam/canvas-answer'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
@@ -172,11 +173,9 @@ export function GradingQuestionsSection({
                                 <span className="text-muted-foreground italic">No answer provided</span>
                             ) : question.type === 'canvas' ? (
                                 <div className="border rounded bg-white">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                        src={answer.answer_json as string}
-                                        alt="Student Drawing"
-                                        className="w-full h-auto max-h-[500px] object-contain"
+                                    <CanvasAnswer
+                                        readOnly
+                                        initialData={answer.answer_json as string}
                                     />
                                 </div>
                             ) : question.type === 'mcq_single' ? (

@@ -20,7 +20,15 @@ import {
     Heading2,
     Heading3,
     Video,
+    Highlighter,
+    Palette,
 } from 'lucide-react'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface MarkdownEditorProps {
     value: string
@@ -80,6 +88,21 @@ export function MarkdownEditor({
         { icon: ListOrdered, action: () => insertMarkdown('1. ', '', 'item'), title: 'Numbered List' },
         { icon: Quote, action: () => insertMarkdown('> ', '', 'quote'), title: 'Quote' },
         { type: 'separator' },
+        { icon: Highlighter, action: () => insertMarkdown('<mark>', '</mark>', 'highlighted text'), title: 'Highlight' },
+        {
+            type: 'dropdown',
+            icon: Palette,
+            title: 'Text Color',
+            items: [
+                { label: 'Red', color: '#ef4444' },
+                { label: 'Green', color: '#22c55e' },
+                { label: 'Blue', color: '#3b82f6' },
+                { label: 'Teal', color: '#14b8a6' },
+                { label: 'Orange', color: '#f97316' },
+                { label: 'Purple', color: '#a855f7' },
+            ]
+        },
+        { type: 'separator' },
         { icon: Link, action: () => insertMarkdown('[', '](url)', 'link text'), title: 'Link' },
         { icon: Image, action: () => insertMarkdown('![', '](url)', 'alt text'), title: 'Image' },
         { icon: Video, action: () => insertMarkdown('[', '](https://www.youtube.com/watch?v=...)', 'Video Title'), title: 'Video' },
@@ -109,10 +132,42 @@ export function MarkdownEditor({
 
                     {tab === 'write' && (
                         <div className="flex items-center gap-0.5">
-                            {toolbarButtons.map((btn, i) =>
-                                btn.type === 'separator' ? (
-                                    <div key={i} className="w-px h-4 bg-border mx-1" />
-                                ) : (
+                            {toolbarButtons.map((btn: any, i) => {
+                                if (btn.type === 'separator') {
+                                    return <div key={i} className="w-px h-4 bg-border mx-1" />
+                                }
+
+                                if (btn.type === 'dropdown') {
+                                    return (
+                                        <DropdownMenu key={i}>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0"
+                                                    title={btn.title}
+                                                >
+                                                    <btn.icon className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="start">
+                                                {btn.items.map((item: any) => (
+                                                    <DropdownMenuItem
+                                                        key={item.label}
+                                                        onClick={() => insertMarkdown(`<span style="color: ${item.color}">`, '</span>', item.label)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <div className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: item.color }} />
+                                                        {item.label}
+                                                    </DropdownMenuItem>
+                                                ))}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )
+                                }
+
+                                return (
                                     <Button
                                         key={i}
                                         type="button"
@@ -125,7 +180,7 @@ export function MarkdownEditor({
                                         {btn.icon && <btn.icon className="h-4 w-4" />}
                                     </Button>
                                 )
-                            )}
+                            })}
                         </div>
                     )}
                 </div>
@@ -139,12 +194,12 @@ export function MarkdownEditor({
                         style={{ minHeight }}
                     />
                     <div className="bg-muted/30 px-3 py-2 text-xs text-muted-foreground border-t">
-                        Supports Markdown, LaTeX math ($..$ or $$..$$), tables, and code blocks
+                        Supports Markdown, LaTeX math ($..$ or $$..$$), tables, code blocks, and coloring/highlighting
                     </div>
                 </TabsContent>
 
                 <TabsContent value="preview" className="m-0">
-                    <div className="p-4" style={{ minHeight }}>
+                    <div className="p-4 prose max-w-none dark:prose-invert" style={{ minHeight }}>
                         {value ? (
                             <MarkdownViewer content={value} />
                         ) : (

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { MarkdownViewer } from '@/components/markdown'
 import { CheckCircle, XCircle, HelpCircle, LayoutList, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react'
 import { QuestionNavigator } from '@/components/exam/question-navigator'
+import { CanvasAnswer } from '@/components/exam/canvas-answer'
 import { cn } from '@/lib/utils'
 
 interface ReviewQuestionsSectionProps {
@@ -96,11 +97,9 @@ export function ReviewQuestionsSection({
                                 <span>{answer.answer_json ? 'True' : 'False'}</span>
                             ) : question.type === 'canvas' ? (
                                 <div className="border rounded bg-white">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                        src={answer.answer_json}
-                                        alt="Student Answer"
-                                        className="w-full h-auto max-h-[400px] object-contain"
+                                    <CanvasAnswer
+                                        readOnly
+                                        initialData={answer.answer_json}
                                     />
                                 </div>
                             ) : (
