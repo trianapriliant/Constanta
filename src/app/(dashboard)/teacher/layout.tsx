@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
@@ -56,9 +57,7 @@ export default async function TeacherLayout({
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-8">
                         <Link href="/teacher" className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg gradient-teal flex items-center justify-center">
-                                <GraduationCap className="w-5 h-5 text-white" />
-                            </div>
+                            <Image src="/icon.png" width={32} height={32} alt="Constanta Logo" className="w-8 h-8 rounded-lg" />
                             <span className="font-semibold text-xl">Constanta</span>
                         </Link>
 

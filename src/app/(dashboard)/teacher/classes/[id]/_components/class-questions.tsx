@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Plus, FileQuestion } from 'lucide-react'
+import { QuestionActions } from '../questions/_components/question-actions'
 
 interface ClassQuestionsProps {
     classId: string
@@ -60,34 +61,38 @@ export async function ClassQuestions({ classId }: ClassQuestionsProps) {
                 ) : (
                     <div className="space-y-3">
                         {questions.map((q: any) => (
-                            <Link key={q.id} href={`/teacher/classes/${classId}/questions/${q.id}`}>
-                                <div className="p-4 rounded-xl border hover:bg-muted/50 transition-colors cursor-pointer">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium line-clamp-2 text-sm">
-                                                {q.prompt_md.replace(/[#*`]/g, '').substring(0, 150)}
-                                                {q.prompt_md.length > 150 ? '...' : ''}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                                <Badge variant="outline" className="text-xs">
-                                                    {typeLabels[q.type as string] || q.type}
+                            <div key={q.id} className="p-4 rounded-xl border hover:bg-muted/50 transition-colors bg-card">
+                                <div className="flex items-start justify-between gap-4">
+                                    <Link
+                                        href={`/teacher/classes/${classId}/questions/${q.id}`}
+                                        className="flex-1 min-w-0 group"
+                                    >
+                                        <p className="font-medium line-clamp-2 text-sm group-hover:text-teal-700 transition-colors">
+                                            {q.prompt_md.replace(/[#*`]/g, '').substring(0, 150)}
+                                            {q.prompt_md.length > 150 ? '...' : ''}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                            <Badge variant="outline" className="text-xs">
+                                                {typeLabels[q.type as string] || q.type}
+                                            </Badge>
+                                            <Badge className={`text-xs ${difficultyColors[q.difficulty as keyof typeof difficultyColors] || 'bg-gray-100 text-gray-700'}`}>
+                                                {q.difficulty}
+                                            </Badge>
+                                            <Badge variant="secondary" className="text-xs">
+                                                {q.points} pts
+                                            </Badge>
+                                            {q.tags && q.tags.slice(0, 3).map((tag: string) => (
+                                                <Badge key={tag} variant="secondary" className="text-xs">
+                                                    {tag}
                                                 </Badge>
-                                                <Badge className={`text-xs ${difficultyColors[q.difficulty as keyof typeof difficultyColors] || 'bg-gray-100 text-gray-700'}`}>
-                                                    {q.difficulty}
-                                                </Badge>
-                                                <Badge variant="secondary" className="text-xs">
-                                                    {q.points} pts
-                                                </Badge>
-                                                {q.tags && q.tags.slice(0, 3).map((tag: string) => (
-                                                    <Badge key={tag} variant="secondary" className="text-xs">
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
-                                            </div>
+                                            ))}
                                         </div>
+                                    </Link>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <QuestionActions classId={classId} questionId={q.id} variant="icon" />
                                     </div>
                                 </div>
-                            </Link>
+                            </div>
                         ))}
                     </div>
                 )}
