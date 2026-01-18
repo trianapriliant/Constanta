@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Copy } from 'lucide-react'
 import { TeacherClassTabs } from './_components/teacher-class-tabs'
+import { EditClassDialog } from './_components/edit-class-dialog'
 
 import { ClassFeed } from './_components/class-feed'
 import { ClassMaterials } from './_components/class-materials'
@@ -58,7 +59,17 @@ export default async function ClassPage({ params }: ClassPageProps) {
             <div className="bg-white rounded-2xl border p-6 mb-6">
                 <div className="flex items-start justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">{cls.title}</h1>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-2xl font-bold">{cls.title}</h1>
+                            <EditClassDialog
+                                classId={id}
+                                initialData={{
+                                    title: cls.title,
+                                    subject: cls.subject,
+                                    description: cls.description
+                                }}
+                            />
+                        </div>
                         {cls.subject && (
                             <p className="text-muted-foreground mt-1">{cls.subject}</p>
                         )}

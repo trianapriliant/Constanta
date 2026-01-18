@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Calendar, FileText, Eye, EyeOff, Edit } from 'lucide-react'
 import { MarkdownViewer } from '@/components/markdown'
+import { MaterialActions } from '../_components/material-actions'
 
 interface PageProps {
     params: Promise<{ id: string; materialId: string }>
@@ -93,6 +94,23 @@ export default async function TeacherMaterialDetailPage({ params }: PageProps) {
                                 <FileText className="w-6 h-6 text-primary" />
                             </div>
                             <div>
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                    {material.chapter && (
+                                        <Badge variant="outline" className="text-muted-foreground">
+                                            {material.chapter}
+                                        </Badge>
+                                    )}
+                                    {material.topic && (
+                                        <Badge variant="outline" className="text-muted-foreground">
+                                            {material.topic}
+                                        </Badge>
+                                    )}
+                                    {material.category && (
+                                        <Badge className="bg-teal-100 text-teal-800 hover:bg-teal-200 border-0 uppercase text-[10px] tracking-wider">
+                                            {material.category}
+                                        </Badge>
+                                    )}
+                                </div>
                                 <CardTitle className="text-2xl flex items-center gap-3">
                                     {material.title}
                                     <Badge variant={material.published ? 'default' : 'secondary'}>
@@ -109,7 +127,7 @@ export default async function TeacherMaterialDetailPage({ params }: PageProps) {
                                 </div>
                             </div>
                         </div>
-                        {/* Future: Add Edit button here */}
+                        <MaterialActions classId={id} materialId={materialId} />
                     </div>
                     {material.tags?.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-4">

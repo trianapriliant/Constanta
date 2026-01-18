@@ -61,9 +61,9 @@ export default async function TeacherDashboard() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {classes.map((cls: any) => (
                         <Link key={cls.id} href={`/teacher/classes/${cls.id}`}>
-                            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                                <div className="h-2 gradient-teal rounded-t-xl" />
-                                <CardHeader className="pb-3">
+                            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full pt-0 overflow-hidden">
+                                <div className="h-2 gradient-teal" />
+                                <CardHeader className="pb-3 pt-4">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <CardTitle className="line-clamp-1">{cls.title}</CardTitle>

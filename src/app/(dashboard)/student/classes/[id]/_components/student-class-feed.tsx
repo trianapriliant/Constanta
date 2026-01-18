@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Megaphone, Calendar, Loader2 } from 'lucide-react'
+import { Megaphone, Calendar, Loader2, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MarkdownViewer } from '@/components/markdown'
+import { Button } from '@/components/ui/button'
+import { CommentSection } from './comment-section'
 
 interface StudentClassFeedProps {
     classId: string
@@ -14,27 +16,42 @@ interface StudentClassFeedProps {
 export function StudentClassFeed({ classId }: StudentClassFeedProps) {
     const [announcements, setAnnouncements] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [currentUser, setCurrentUser] = useState<any>(null)
+    const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
+
+    const toggleComments = (id: string) => {
+        setExpandedComments(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }))
+    }
+
+    const fetchAnnouncements = useCallback(async () => {
+        const supabase = createClient()
+        const { data } = await supabase
+            .from('materials')
+            .select(`
+                *,
+                author:profiles(name, avatar_url)
+            `)
+            .eq('class_id', classId)
+            .is('published', true)
+            .contains('tags', ['announcement'])
+            .order('created_at', { ascending: false })
+
+        setAnnouncements(data || [])
+        setLoading(false)
+    }, [classId])
 
     useEffect(() => {
-        const fetchAnnouncements = async () => {
+        const getUser = async () => {
             const supabase = createClient()
-            const { data } = await supabase
-                .from('materials')
-                .select(`
-                    *,
-                    author:profiles(name, avatar_url)
-                `)
-                .eq('class_id', classId)
-                .is('published', true)
-                .contains('tags', ['announcement'])
-                .order('created_at', { ascending: false })
-
-            setAnnouncements(data || [])
-            setLoading(false)
+            const { data: { user } } = await supabase.auth.getUser()
+            setCurrentUser(user)
         }
-
+        getUser()
         fetchAnnouncements()
-    }, [classId])
+    }, [classId, fetchAnnouncements])
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('id-ID', {
@@ -99,9 +116,11 @@ export function StudentClassFeed({ classId }: StudentClassFeedProps) {
                         </div>
                     </CardHeader>
                     <CardContent className="pt-4">
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <div className="prose prose-sm dark:prose-invert max-w-none mb-4">
                             <MarkdownViewer content={item.content_md} />
                         </div>
+
+                        <CommentSection materialId={item.id} currentUser={currentUser} />
                     </CardContent>
                 </Card>
             ))}

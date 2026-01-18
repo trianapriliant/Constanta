@@ -106,6 +106,9 @@ export interface Database {
                     title: string
                     content_md: string
                     tags: string[]
+                    chapter: string | null
+                    topic: string | null
+                    category: string | null
                     published: boolean
                     published_at: string | null
                     created_at: string
@@ -118,6 +121,9 @@ export interface Database {
                     title: string
                     content_md: string
                     tags?: string[]
+                    chapter?: string | null
+                    topic?: string | null
+                    category?: string | null
                     published?: boolean
                     published_at?: string | null
                     created_at?: string
@@ -127,6 +133,9 @@ export interface Database {
                     title?: string
                     content_md?: string
                     tags?: string[]
+                    chapter?: string | null
+                    topic?: string | null
+                    category?: string | null
                     published?: boolean
                     published_at?: string | null
                     updated_at?: string

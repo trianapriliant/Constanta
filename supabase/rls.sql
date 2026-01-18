@@ -62,6 +62,42 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Check if user can create a comment (member of the class or owner)
+CREATE OR REPLACE FUNCTION can_create_comment(material_uuid UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_class_id UUID;
+  v_class_owner UUID;
+BEGIN
+  -- Get class_id for the material
+  SELECT class_id INTO v_class_id
+  FROM materials
+  WHERE id = material_uuid;
+
+  IF v_class_id IS NULL THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Get class owner
+  SELECT created_by INTO v_class_owner
+  FROM classes
+  WHERE id = v_class_id;
+
+  -- 1. Check if user is the class owner
+  IF v_class_owner = auth.uid() THEN
+    RETURN TRUE;
+  END IF;
+
+  -- 2. Check if user is a member of that class
+  RETURN EXISTS (
+    SELECT 1 FROM class_members
+    WHERE class_id = v_class_id
+      AND user_id = auth.uid()
+      AND status = 'active'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- ============================================================================
 -- PROFILES POLICIES
 -- ============================================================================
@@ -88,6 +124,20 @@ CREATE POLICY "Teachers can read class member profiles"
         AND cm2.user_id = profiles.id
         AND cm1.status = 'active'
         AND cm2.status = 'active'
+    )
+  );
+
+-- Class members can view other members (including teachers)
+CREATE POLICY "Class members can view other members"
+  ON profiles FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM class_members cm_viewer
+      JOIN class_members cm_target ON cm_viewer.class_id = cm_target.class_id
+      WHERE cm_viewer.user_id = auth.uid()
+        AND cm_target.user_id = profiles.id
+        AND cm_viewer.status = 'active'
+        AND cm_target.status = 'active'
     )
   );
 
@@ -201,6 +251,47 @@ CREATE POLICY "Members can read material attachments"
 
 CREATE POLICY "Teachers can manage attachments"
   ON material_attachments FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM materials m
+      WHERE m.id = material_id AND is_class_teacher(m.class_id)
+    )
+  );
+
+-- ============================================================================
+-- MATERIAL COMMENTS POLICIES
+-- ============================================================================
+
+ALTER TABLE material_comments ENABLE ROW LEVEL SECURITY;
+
+-- Members can read comments
+CREATE POLICY "Members can read comments"
+  ON material_comments FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM materials m
+      WHERE m.id = material_id
+        AND is_class_member(m.class_id)
+        AND (m.published = true OR is_class_teacher(m.class_id))
+    )
+  );
+
+-- Members can create comments
+CREATE POLICY "Members can create comments"
+  ON material_comments FOR INSERT
+  WITH CHECK (
+    can_create_comment(material_id)
+    AND user_id = auth.uid()
+  );
+
+-- Users can delete their own comments
+CREATE POLICY "Users can delete own comments"
+  ON material_comments FOR DELETE
+  USING (user_id = auth.uid());
+
+-- Teachers can delete any comment in the class
+CREATE POLICY "Teachers can delete any comment"
+  ON material_comments FOR DELETE
   USING (
     EXISTS (
       SELECT 1 FROM materials m

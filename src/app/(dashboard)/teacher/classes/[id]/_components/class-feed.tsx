@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Megaphone, Calendar, Send, Loader2 } from 'lucide-react'
+import { Plus, Megaphone, Calendar, Send, Loader2, MoreVertical, Trash, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import {
     Dialog,
@@ -14,11 +14,28 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MarkdownViewer } from '@/components/markdown'
+import { CommentSection } from './comment-section'
 
 interface ClassFeedProps {
     classId: string
@@ -31,6 +48,13 @@ export function ClassFeed({ classId }: ClassFeedProps) {
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
     const [submitting, setSubmitting] = useState(false)
+
+    // Delete and Comment state
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null)
+    const [deleteLoading, setDeleteLoading] = useState(false)
+    const [currentUser, setCurrentUser] = useState<any>(null)
+    const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
 
     const fetchAnnouncements = async () => {
         const supabase = createClient()
@@ -49,8 +73,37 @@ export function ClassFeed({ classId }: ClassFeedProps) {
     }
 
     useEffect(() => {
+        const getUser = async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            setCurrentUser(user)
+        }
+        getUser()
         fetchAnnouncements()
     }, [classId])
+
+    const handleDelete = async () => {
+        if (!itemToDelete) return
+        setDeleteLoading(true)
+        const supabase = createClient()
+        const { error } = await supabase.from('materials').delete().eq('id', itemToDelete)
+
+        if (error) {
+            toast.error('Failed to delete announcement')
+        } else {
+            toast.success('Announcement deleted')
+            setAnnouncements(prev => prev.filter(a => a.id !== itemToDelete))
+            setDeleteDialogOpen(false)
+        }
+        setDeleteLoading(false)
+    }
+
+    const toggleComments = (id: string) => {
+        setExpandedComments(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }))
+    }
 
     const handlePost = async () => {
         if (!title.trim() || !content.trim()) return
@@ -186,17 +239,64 @@ export function ClassFeed({ classId }: ClassFeedProps) {
                                             </p>
                                         </div>
                                     </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <MoreVertical className="w-4 h-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem
+                                                className="text-destructive focus:text-destructive cursor-pointer"
+                                                onClick={() => {
+                                                    setItemToDelete(item.id)
+                                                    setDeleteDialogOpen(true)
+                                                }}
+                                            >
+                                                <Trash className="w-4 h-4 mr-2" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </CardHeader>
                             <CardContent className="pt-4">
-                                <div className="prose prose-sm dark:prose-invert max-w-none">
+                                <div className="prose prose-sm dark:prose-invert max-w-none mb-4">
                                     <MarkdownViewer content={item.content_md} />
                                 </div>
+
+                                {/* Chat Section always visible */}
+                                <CommentSection materialId={item.id} currentUser={currentUser} />
                             </CardContent>
                         </Card>
                     ))
                 )}
             </div>
+
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete this announcement.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault()
+                                handleDelete()
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={deleteLoading}
+                        >
+                            {deleteLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

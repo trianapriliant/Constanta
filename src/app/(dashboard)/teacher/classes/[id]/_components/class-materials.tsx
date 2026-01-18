@@ -9,6 +9,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, FileText, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Material } from '@/types/database'
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
+import { MaterialActions } from '../materials/_components/material-actions'
 
 interface ClassMaterialsProps {
     classId: string
@@ -71,41 +78,85 @@ export function ClassMaterials({ classId }: ClassMaterialsProps) {
                         <p>No materials yet. Add your first learning material!</p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
-                        {materials.map((material) => (
-                            <Link
-                                key={material.id}
-                                href={`/teacher/classes/${classId}/materials/${material.id}`}
-                            >
-                                <div className="p-4 rounded-xl border hover:bg-muted/50 transition-colors cursor-pointer">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-                                                <FileText className="w-5 h-5 text-primary" />
+                    <Accordion type="multiple" className="space-y-4">
+                        {Object.entries(
+                            materials.reduce<Record<string, Record<string, Material[]>>>((acc, material) => {
+                                const chapter = material.chapter || 'General Resources'
+                                const topic = material.topic || 'Uncategorized'
+                                if (!acc[chapter]) acc[chapter] = {}
+                                if (!acc[chapter][topic]) acc[chapter][topic] = []
+                                acc[chapter][topic].push(material)
+                                return acc
+                            }, {})
+                        ).sort(([a], [b]) => a.localeCompare(b)).map(([chapter, topics]) => (
+                            <AccordionItem key={chapter} value={chapter} className="border rounded-lg px-4">
+                                <AccordionTrigger className="hover:no-underline hover:text-teal-600">
+                                    <span className="font-semibold text-lg">{chapter}</span>
+                                </AccordionTrigger>
+                                <AccordionContent className="pt-4 space-y-6">
+                                    {Object.entries(topics as Record<string, Material[]>).sort(([a], [b]) => a.localeCompare(b)).map(([topic, items]) => (
+                                        <div key={topic}>
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <div className="h-px bg-border flex-1" />
+                                                <h4 className="text-sm font-medium text-muted-foreground px-2 py-1 bg-muted rounded-full">
+                                                    {topic}
+                                                </h4>
+                                                <div className="h-px bg-border flex-1" />
                                             </div>
-                                            <div>
-                                                <h4 className="font-medium">{material.title}</h4>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    {material.tags.map((tag) => (
-                                                        <Badge key={tag} variant="secondary" className="text-xs">
-                                                            {tag}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
+                                            <div className="grid gap-3">
+                                                {items.map((material) => (
+                                                    <div key={material.id} className="p-4 rounded-xl border hover:bg-muted/50 transition-colors bg-card">
+                                                        <div className="flex items-start justify-between gap-4">
+                                                            <Link
+                                                                href={`/teacher/classes/${classId}/materials/${material.id}`}
+                                                                className="flex-1 flex items-start gap-3 group"
+                                                            >
+                                                                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center group-hover:bg-accent/80 transition-colors">
+                                                                    <FileText className="w-5 h-5 text-primary" />
+                                                                </div>
+                                                                <div>
+                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
+                                                                            {material.category || 'Material'}
+                                                                        </Badge>
+                                                                        <h4 className="font-medium group-hover:text-teal-600 transition-colors">{material.title}</h4>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 mt-1">
+                                                                        {material.tags.map((tag) => (
+                                                                            <Badge key={tag} variant="secondary" className="text-xs">
+                                                                                {tag}
+                                                                            </Badge>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </Link>
+
+                                                            <div className="flex flex-col items-end gap-2">
+                                                                <Badge variant={material.published ? 'default' : 'secondary'}>
+                                                                    {material.published ? (
+                                                                        <><Eye className="w-3 h-3 mr-1" /> Published</>
+                                                                    ) : (
+                                                                        <><EyeOff className="w-3 h-3 mr-1" /> Draft</>
+                                                                    )}
+                                                                </Badge>
+
+                                                                {/* Actions Shortcut */}
+                                                                <MaterialActions
+                                                                    classId={classId}
+                                                                    materialId={material.id}
+                                                                    variant="icon"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
-                                        <Badge variant={material.published ? 'default' : 'secondary'}>
-                                            {material.published ? (
-                                                <><Eye className="w-3 h-3 mr-1" /> Published</>
-                                            ) : (
-                                                <><EyeOff className="w-3 h-3 mr-1" /> Draft</>
-                                            )}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            </Link>
+                                    ))}
+                                </AccordionContent>
+                            </AccordionItem>
                         ))}
-                    </div>
+                    </Accordion>
                 )}
             </CardContent>
         </Card>

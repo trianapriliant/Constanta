@@ -180,6 +180,7 @@ CREATE INDEX idx_classes_class_code ON classes(class_code);
 CREATE INDEX idx_class_members_class_id ON class_members(class_id);
 CREATE INDEX idx_class_members_user_id ON class_members(user_id);
 CREATE INDEX idx_materials_class_id ON materials(class_id);
+CREATE INDEX idx_material_comments_material_id ON material_comments(material_id);
 CREATE INDEX idx_questions_class_id ON questions(class_id);
 CREATE INDEX idx_questions_tags ON questions USING GIN(tags);
 CREATE INDEX idx_exams_class_id ON exams(class_id);
@@ -247,6 +248,10 @@ CREATE TRIGGER trigger_classes_updated_at
 
 CREATE TRIGGER trigger_materials_updated_at
   BEFORE UPDATE ON materials
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_material_comments_updated_at
+  BEFORE UPDATE ON material_comments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE TRIGGER trigger_questions_updated_at

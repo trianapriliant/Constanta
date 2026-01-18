@@ -19,6 +19,7 @@ import {
     Heading1,
     Heading2,
     Heading3,
+    Video,
 } from 'lucide-react'
 
 interface MarkdownEditorProps {
@@ -81,6 +82,7 @@ export function MarkdownEditor({
         { type: 'separator' },
         { icon: Link, action: () => insertMarkdown('[', '](url)', 'link text'), title: 'Link' },
         { icon: Image, action: () => insertMarkdown('![', '](url)', 'alt text'), title: 'Image' },
+        { icon: Video, action: () => insertMarkdown('[', '](https://www.youtube.com/watch?v=...)', 'Video Title'), title: 'Video' },
         {
             icon: Table,
             action: () =>
