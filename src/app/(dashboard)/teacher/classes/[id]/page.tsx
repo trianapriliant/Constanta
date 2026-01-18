@@ -13,6 +13,7 @@ import { ClassExams } from './_components/class-exams'
 import { ClassQuestions } from './_components/class-questions'
 import { ClassPeople } from './_components/class-people'
 import { ClassAnalytics } from './_components/class-analytics'
+import { ExternalLinksCard } from './_components/external-links-card'
 
 interface ClassPageProps {
     params: Promise<{ id: string }>
@@ -52,6 +53,13 @@ export default async function ClassPage({ params }: ClassPageProps) {
         .select('*', { count: 'exact', head: true })
         .eq('class_id', id)
         .eq('status', 'active')
+
+    // Get External Links
+    const { data: classLinks } = await supabase
+        .from('class_links')
+        .select('*')
+        .eq('class_id', id)
+        .order('created_at', { ascending: false })
 
     return (
         <div>
@@ -100,6 +108,9 @@ export default async function ClassPage({ params }: ClassPageProps) {
                     </span>
                 </div>
             </div>
+
+            {/* External Links */}
+            <ExternalLinksCard classId={id} links={classLinks || []} />
 
             {/* Class Tabs */}
             <TeacherClassTabs

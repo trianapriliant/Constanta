@@ -65,7 +65,12 @@ export const questionSchema = z.object({
     type: z.enum(['mcq_single', 'mcq_multi', 'true_false', 'numeric', 'short_text', 'essay', 'canvas']),
     difficulty: z.enum(['easy', 'medium', 'hard']),
     tags: z.array(z.string()).default([]),
-    points: z.number().min(1).default(1),
+    points: z.number().default(1),
+    grading_config: z.object({
+        correct_points: z.number(),
+        incorrect_points: z.number(),
+        unanswered_points: z.number(),
+    }).optional().nullable(),
     prompt_md: z.string().min(1, 'Question prompt is required'),
     options_json: z.array(mcqOptionSchema).optional(),
     correct_answer_json: z.any(),

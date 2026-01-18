@@ -173,6 +173,7 @@ export interface Database {
                     difficulty: Difficulty
                     tags: string[]
                     points: number
+                    grading_config: Json | null
                     prompt_md: string
                     options_json: Json | null
                     correct_answer_json: Json
@@ -189,6 +190,7 @@ export interface Database {
                     difficulty?: Difficulty
                     tags?: string[]
                     points?: number
+                    grading_config?: Json | null
                     prompt_md: string
                     options_json?: Json | null
                     correct_answer_json: Json
@@ -202,6 +204,7 @@ export interface Database {
                     difficulty?: Difficulty
                     tags?: string[]
                     points?: number
+                    grading_config?: Json | null
                     prompt_md?: string
                     options_json?: Json | null
                     correct_answer_json?: Json
@@ -272,6 +275,7 @@ export interface Database {
                     question_id: string
                     order_index: number
                     points: number
+                    grading_config: Json | null
                 }
                 Insert: {
                     id?: string
@@ -279,10 +283,12 @@ export interface Database {
                     question_id: string
                     order_index: number
                     points: number
+                    grading_config?: Json | null
                 }
                 Update: {
                     order_index?: number
                     points?: number
+                    grading_config?: Json | null
                 }
             }
             attempts: {

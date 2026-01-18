@@ -13,11 +13,18 @@ export interface GradingResult {
     needsManualGrading: boolean
 }
 
+export interface GradingConfig {
+    correct_points: number
+    incorrect_points: number
+    unanswered_points: number
+}
+
 export interface GradingInput {
     questionType: QuestionType
     correctAnswer: Json
     studentAnswer: Json | null
     points: number
+    gradingConfig?: GradingConfig | null
     numericTolerance?: number | null
 }
 
@@ -25,47 +32,68 @@ export interface GradingInput {
  * Grade a single question answer
  */
 export function gradeAnswer(input: GradingInput): GradingResult {
-    const { questionType, correctAnswer, studentAnswer, points, numericTolerance } = input
+    const { questionType, correctAnswer, studentAnswer, points, numericTolerance, gradingConfig } = input
 
-    // No answer provided
-    if (studentAnswer === null || studentAnswer === undefined) {
+    // No answer provided (or empty string/array if applicable - simplified check)
+    if (studentAnswer === null || studentAnswer === undefined || studentAnswer === '') {
         return {
             isCorrect: false,
-            pointsAwarded: 0,
+            pointsAwarded: gradingConfig ? gradingConfig.unanswered_points : 0,
             needsManualGrading: false,
         }
     }
 
+    let result: GradingResult
+
     switch (questionType) {
         case 'mcq_single':
-            return gradeMcqSingle(correctAnswer, studentAnswer, points)
+            result = gradeMcqSingle(correctAnswer, studentAnswer, points)
+            break
 
         case 'mcq_multi':
-            return gradeMcqMulti(correctAnswer, studentAnswer, points)
+            result = gradeMcqMulti(correctAnswer, studentAnswer, points)
+            break
 
         case 'true_false':
-            return gradeTrueFalse(correctAnswer, studentAnswer, points)
+            result = gradeTrueFalse(correctAnswer, studentAnswer, points)
+            break
 
         case 'numeric':
-            return gradeNumeric(correctAnswer, studentAnswer, points, numericTolerance)
+            result = gradeNumeric(correctAnswer, studentAnswer, points, numericTolerance)
+            break
 
         case 'short_text':
-            return gradeShortText(correctAnswer, studentAnswer, points)
+            result = gradeShortText(correctAnswer, studentAnswer, points)
+            break
 
         case 'essay':
-            return {
+            result = {
                 isCorrect: null,
                 pointsAwarded: 0,
                 needsManualGrading: true,
             }
+            break
 
         default:
-            return {
+            result = {
+                // Default to incorrect for unknown types, or just zero
                 isCorrect: false,
                 pointsAwarded: 0,
                 needsManualGrading: false,
             }
     }
+
+    // Override with Advanced Grading Config if available
+    // Note: Essay (isCorrect: null) is handled separately (manual grading)
+    if (gradingConfig && result.isCorrect !== null) {
+        if (result.isCorrect) {
+            result.pointsAwarded = gradingConfig.correct_points
+        } else {
+            result.pointsAwarded = gradingConfig.incorrect_points
+        }
+    }
+
+    return result
 }
 
 /**

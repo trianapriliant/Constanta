@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
     Select,
@@ -54,6 +55,7 @@ export default function EditQuestionPage() {
     const [correctAnswer, setCorrectAnswer] = useState<string | string[] | boolean | number>('')
     const [tagInput, setTagInput] = useState('')
     const [tags, setTags] = useState<string[]>([])
+    const [isAdvancedScoring, setIsAdvancedScoring] = useState(false)
 
     const form = useForm<QuestionFormData>({
         resolver: zodResolver(questionSchema) as any,
@@ -62,9 +64,13 @@ export default function EditQuestionPage() {
             difficulty: 'medium',
             points: 1,
             tags: [],
-            prompt_md: '',
             explanation_md: '',
             numeric_tolerance: 0,
+            grading_config: {
+                correct_points: 4,
+                incorrect_points: -1,
+                unanswered_points: 0,
+            }
         },
     })
 
@@ -107,6 +113,13 @@ export default function EditQuestionPage() {
                     { id: uuidv4(), text_md: '' },
                     { id: uuidv4(), text_md: '' },
                 ])
+            }
+
+            if (data.grading_config) {
+                setIsAdvancedScoring(true)
+                form.setValue('grading_config', data.grading_config)
+            } else {
+                setIsAdvancedScoring(false)
             }
 
             setCorrectAnswer(data.correct_answer_json)
@@ -159,18 +172,28 @@ export default function EditQuestionPage() {
                 optionsJson = options.filter(o => o.text_md.trim()) as any
             }
 
+            // Handle Advanced Scoring Logic
+            let finalPoints = data.points
+            let finalGradingConfig = null
+
+            if (isAdvancedScoring && data.grading_config) {
+                finalPoints = data.grading_config.correct_points // Sync main points with correct points
+                finalGradingConfig = data.grading_config
+            }
+
             const { error } = await supabase
                 .from('questions')
                 .update({
                     type: data.type,
                     difficulty: data.difficulty,
                     tags: tags,
-                    points: data.points,
+                    points: finalPoints,
                     prompt_md: promptMd,
                     options_json: optionsJson,
                     correct_answer_json: correctAnswerJson,
                     explanation_md: explanationMd || null,
                     numeric_tolerance: data.type === 'numeric' ? data.numeric_tolerance : null,
+                    grading_config: finalGradingConfig,
                 })
                 .eq('id', questionId)
 
@@ -297,13 +320,56 @@ export default function EditQuestionPage() {
                             </Select>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label>Points</Label>
-                            <Input
-                                type="number"
-                                min={1}
-                                {...form.register('points', { valueAsNumber: true })}
-                            />
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="scoring-mode" className="cursor-pointer font-medium">Advanced Scoring</Label>
+                                <Switch
+                                    id="scoring-mode"
+                                    checked={isAdvancedScoring}
+                                    onCheckedChange={setIsAdvancedScoring}
+                                />
+                            </div>
+
+                            {!isAdvancedScoring ? (
+                                <div className="space-y-2">
+                                    <Label>Points</Label>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        {...form.register('points', { valueAsNumber: true })}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs text-green-600 font-medium whitespace-nowrap">Correct (+)</Label>
+                                        <Input
+                                            type="number"
+                                            className="h-8"
+                                            {...form.register('grading_config.correct_points', { valueAsNumber: true })}
+                                            placeholder="4"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs text-red-600 font-medium whitespace-nowrap">Incorrect (-)</Label>
+                                        <Input
+                                            type="number"
+                                            className="h-8"
+                                            {...form.register('grading_config.incorrect_points', { valueAsNumber: true })}
+                                            placeholder="-1"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs text-slate-500 font-medium whitespace-nowrap">No Answer (0)</Label>
+                                        <Input
+                                            type="number"
+                                            className="h-8"
+                                            {...form.register('grading_config.unanswered_points', { valueAsNumber: true })}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {questionType === 'numeric' && (
