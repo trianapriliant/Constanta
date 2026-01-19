@@ -109,9 +109,6 @@ export default async function ClassPage({ params }: ClassPageProps) {
                 </div>
             </div>
 
-            {/* External Links */}
-            <ExternalLinksCard classId={id} links={classLinks || []} />
-
             {/* Class Tabs */}
             <TeacherClassTabs
                 classId={id}
@@ -120,6 +117,7 @@ export default async function ClassPage({ params }: ClassPageProps) {
                 materials={<ClassMaterials classId={id} />}
                 exams={<ClassExams classId={id} />}
                 questions={<ClassQuestions classId={id} />}
+                links={<ExternalLinksCard classId={id} links={classLinks || []} />}
                 people={<ClassPeople classId={id} classCode={cls.class_code} />}
                 analytics={<ClassAnalytics classId={id} />}
             />

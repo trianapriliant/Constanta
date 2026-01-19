@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -22,6 +22,8 @@ import {
     Video,
     Highlighter,
     Palette,
+    Undo,
+    Redo,
 } from 'lucide-react'
 import {
     DropdownMenu,
@@ -47,6 +49,93 @@ export function MarkdownEditor({
 }: MarkdownEditorProps) {
     const [tab, setTab] = useState<'write' | 'preview'>('write')
 
+    // History Management
+    const [history, setHistory] = useState<string[]>([value])
+    const [historyIndex, setHistoryIndex] = useState(0)
+    // Ref to ignore updates triggered by undo/redo to avoid double pushing
+    const ignoreNextUpdate = useRef(false)
+
+    // Debounce history updates to avoid saving every character
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+    const updateHistory = useCallback((newValue: string) => {
+        if (ignoreNextUpdate.current) {
+            ignoreNextUpdate.current = false
+            return
+        }
+
+        // Clear existing timeout to debounce typing
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+
+        timeoutRef.current = setTimeout(() => {
+            setHistory((prev) => {
+                const newHistory = prev.slice(0, historyIndex + 1)
+                newHistory.push(newValue)
+                // Limit history size if needed, e.g. 50 items
+                if (newHistory.length > 50) newHistory.shift()
+                return newHistory
+            })
+            setHistoryIndex((prev) => {
+                const nextIndex = prev + 1
+                // Adjust if shift happened (very rough approximation logic, usually ok for small limits)
+                return nextIndex > 50 ? 50 : nextIndex
+            })
+        }, 800) // 800ms debounce
+    }, [historyIndex])
+
+    // Sync external value changes to history (initial load or external updates)
+    // This is tricky with controlled components. 
+    // Simplified: We assume onChange -> Parent -> value passes back.
+    // We just hook into the `handleChange` wrapper.
+
+    const handleChange = (newValue: string) => {
+        onChange(newValue)
+        updateHistory(newValue)
+    }
+
+    const undo = useCallback(() => {
+        if (historyIndex > 0) {
+            const newIndex = historyIndex - 1
+            const previousValue = history[newIndex]
+            ignoreNextUpdate.current = true // Don't push this revert as a new change
+            onChange(previousValue)
+            setHistoryIndex(newIndex)
+        }
+    }, [history, historyIndex, onChange])
+
+    const redo = useCallback(() => {
+        if (historyIndex < history.length - 1) {
+            const newIndex = historyIndex + 1
+            const nextValue = history[newIndex]
+            ignoreNextUpdate.current = true
+            onChange(nextValue)
+            setHistoryIndex(newIndex)
+        }
+    }, [history, historyIndex, onChange])
+
+    // Keyboard Shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (tab !== 'write') return
+
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault()
+                if (e.shiftKey) {
+                    redo()
+                } else {
+                    undo()
+                }
+            } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+                e.preventDefault()
+                redo()
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [undo, redo, tab])
+
+
     const insertMarkdown = useCallback(
         (before: string, after: string = '', placeholder: string = '') => {
             const textarea = document.querySelector('textarea') as HTMLTextAreaElement
@@ -63,6 +152,16 @@ export function MarkdownEditor({
                 after +
                 value.substring(end)
 
+            // For button clicks, we want immediate history save, no debounce
+            if (timeoutRef.current) clearTimeout(timeoutRef.current)
+
+            setHistory((prev) => {
+                const newHistory = prev.slice(0, historyIndex + 1)
+                newHistory.push(newValue)
+                return newHistory
+            })
+            setHistoryIndex((prev) => prev + 1)
+
             onChange(newValue)
 
             // Reset cursor position
@@ -72,10 +171,13 @@ export function MarkdownEditor({
                 textarea.setSelectionRange(newCursorPos, newCursorPos)
             }, 0)
         },
-        [value, onChange]
+        [value, onChange, historyIndex]
     )
 
     const toolbarButtons = [
+        { icon: Undo, action: undo, title: 'Undo (Ctrl+Z)', disabled: historyIndex <= 0 },
+        { icon: Redo, action: redo, title: 'Redo (Ctrl+Y)', disabled: historyIndex >= history.length - 1 },
+        { type: 'separator' },
         { icon: Heading1, action: () => insertMarkdown('# ', '', 'Heading 1'), title: 'Heading 1' },
         { icon: Heading2, action: () => insertMarkdown('## ', '', 'Heading 2'), title: 'Heading 2' },
         { icon: Heading3, action: () => insertMarkdown('### ', '', 'Heading 3'), title: 'Heading 3' },
@@ -176,8 +278,9 @@ export function MarkdownEditor({
                                         className="h-7 w-7 p-0"
                                         onClick={btn.action}
                                         title={btn.title}
+                                        disabled={btn.disabled}
                                     >
-                                        {btn.icon && <btn.icon className="h-4 w-4" />}
+                                        {btn.icon && <btn.icon className={cn("h-4 w-4", btn.disabled && "opacity-50")} />}
                                     </Button>
                                 )
                             })}
@@ -188,7 +291,7 @@ export function MarkdownEditor({
                 <TabsContent value="write" className="m-0">
                     <Textarea
                         value={value}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={(e) => handleChange(e.target.value)}
                         placeholder={placeholder}
                         className="border-0 rounded-none resize-none focus-visible:ring-0"
                         style={{ minHeight }}

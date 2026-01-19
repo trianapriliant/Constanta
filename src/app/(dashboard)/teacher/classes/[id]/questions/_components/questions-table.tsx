@@ -19,13 +19,23 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { MarkdownViewer } from '@/components/markdown/viewer'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface QuestionsTableProps {
     questions: any[]
     classId: string
+    selectedQuestions?: string[]
+    onToggleSelection?: (id: string, checked: boolean) => void
+    onToggleAll?: (checked: boolean) => void
 }
 
-export function QuestionsTable({ questions, classId }: QuestionsTableProps) {
+export function QuestionsTable({
+    questions,
+    classId,
+    selectedQuestions = [],
+    onToggleSelection,
+    onToggleAll
+}: QuestionsTableProps) {
     const difficultyColors = {
         easy: 'bg-green-100 text-green-700 border-green-200',
         medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
@@ -42,11 +52,19 @@ export function QuestionsTable({ questions, classId }: QuestionsTableProps) {
         canvas: 'Canvas',
     }
 
+    const allSelected = questions.length > 0 && selectedQuestions.length === questions.length
+
     return (
         <div className="rounded-md border bg-white overflow-hidden">
             <Table>
                 <TableHeader className="bg-muted/50">
                     <TableRow>
+                        <TableHead className="w-[40px] text-center">
+                            <Checkbox
+                                checked={allSelected}
+                                onCheckedChange={(checked) => onToggleAll?.(checked as boolean)}
+                            />
+                        </TableHead>
                         <TableHead className="w-[350px]">Question</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead>Difficulty</TableHead>
@@ -60,9 +78,16 @@ export function QuestionsTable({ questions, classId }: QuestionsTableProps) {
                     {questions.map((q) => {
                         // Safely extract usage count
                         const usageCount = q.exam_questions?.[0]?.count ?? 0
+                        const isSelected = selectedQuestions.includes(q.id)
 
                         return (
-                            <TableRow key={q.id} className="group hover:bg-muted/30">
+                            <TableRow key={q.id} className={`group hover:bg-muted/30 ${isSelected ? 'bg-muted/30' : ''}`}>
+                                <TableCell className="text-center">
+                                    <Checkbox
+                                        checked={isSelected}
+                                        onCheckedChange={(checked) => onToggleSelection?.(q.id, checked as boolean)}
+                                    />
+                                </TableCell>
                                 <TableCell className="font-medium max-w-[350px]">
                                     <TooltipProvider>
                                         <Tooltip delayDuration={300}>

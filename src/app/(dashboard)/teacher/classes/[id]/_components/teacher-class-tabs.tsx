@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { ClassLinks } from './class-links'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BookOpen, FileQuestion, BarChart3, Users, Link as LinkIcon, GraduationCap, Database } from 'lucide-react'
 
@@ -13,6 +12,7 @@ interface TeacherClassTabsProps {
     materials: React.ReactNode
     exams: React.ReactNode
     questions: React.ReactNode
+    links: React.ReactNode
     people: React.ReactNode
     analytics: React.ReactNode
 }
@@ -24,6 +24,7 @@ export function TeacherClassTabs({
     materials,
     exams,
     questions,
+    links,
     people,
     analytics
 }: TeacherClassTabsProps) {
@@ -88,7 +89,7 @@ export function TeacherClassTabs({
             </TabsContent>
 
             <TabsContent value="links">
-                <ClassLinks classId={classId} />
+                {links}
             </TabsContent>
 
             <TabsContent value="people">
