@@ -41,7 +41,7 @@ export function QuestionNavigator({
                         const questionId = q.question_id || q.id
 
                         let statusColor = 'bg-muted hover:bg-muted/80 text-foreground'
-                        let IndicatorIcon = null
+                        let IndicatorIcon: React.ReactNode = null
 
                         if (mode === 'take') {
                             const isAnswered = answers[questionId] !== undefined && answers[questionId] !== null && answers[questionId] !== ''

@@ -174,10 +174,10 @@ export default function EditQuestionPage() {
 
             // Handle Advanced Scoring Logic
             let finalPoints = data.points
-            let finalGradingConfig = null
+            let finalGradingConfig: any = null
 
             if (isAdvancedScoring && data.grading_config) {
-                finalPoints = data.grading_config.correct_points // Sync main points with correct points
+                finalPoints = data.grading_config.correct_points || data.points || 0 // Sync main points with correct points
                 finalGradingConfig = data.grading_config
             }
 

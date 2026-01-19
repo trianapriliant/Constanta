@@ -172,7 +172,7 @@ export default async function ExamOverviewPage({ params }: ExamOverviewPageProps
                         <Link href={`/student/exams/${id}/take`}>
                             <Button
                                 className="w-full h-12 text-lg gradient-teal text-white border-0"
-                                disabled={isTooEarly || isTooLate}
+                                disabled={!!(isTooEarly || isTooLate)}
                             >
                                 <Play className="w-5 h-5 mr-2" />
                                 Start Exam
